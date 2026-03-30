@@ -112,9 +112,12 @@ function extractPreamble(
       const metaMatches = metaLines.filter((l) => isMetadataLine(l));
 
       if (metaMatches.length > 0) {
-        // Process each line as potential metadata
+        // Process each line as potential metadata, splitting lines that
+        // contain multiple keys (e.g. "Source: ... Tags: ... Serves: 4")
         for (const line of metaLines) {
-          parseMetadataLine(line, recipe, fields);
+          for (const part of splitMetadataKeys(line)) {
+            parseMetadataLine(part, recipe, fields);
+          }
         }
         continue;
       }
@@ -141,6 +144,20 @@ function extractPreamble(
 function isMetadataLine(line: string): boolean {
   const lower = line.toLowerCase().trim();
   return METADATA_KEYS.some((key) => lower.startsWith(key + ":"));
+}
+
+// Splits "Source: https://example.com Tags: a, b Serves: 4" into
+// ["Source: https://example.com", "Tags: a, b", "Serves: 4"]
+const METADATA_SPLIT_RE = new RegExp(
+  `\\s+(?=(${METADATA_KEYS.map((k) => k.charAt(0).toUpperCase() + k.slice(1)).join("|")}):)`,
+  "g",
+);
+
+function splitMetadataKeys(line: string): string[] {
+  const parts = line.split(METADATA_SPLIT_RE).filter((p) => p.trim());
+  // The split with a capture group includes the lookahead match as an element,
+  // so filter to only parts that contain a colon (actual key:value pairs)
+  return parts.filter((p) => p.includes(":"));
 }
 
 function parseMetadataLine(
