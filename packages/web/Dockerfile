@@ -1,0 +1,58 @@
+# Build stage
+FROM node:22-slim AS build
+
+RUN npm install -g pnpm@10
+
+WORKDIR /app
+
+# Copy workspace config
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.base.json ./
+COPY packages/core/package.json packages/core/
+COPY packages/web/package.json packages/web/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source
+COPY packages/core/ packages/core/
+COPY packages/web/ packages/web/
+
+# Build core, then web (server + UI)
+RUN pnpm --filter @mise/core run build
+RUN pnpm --filter @mise/web run build
+
+# Production stage
+FROM node:22-slim
+
+RUN npm install -g pnpm@10
+
+# Install Playwright Chromium and its dependencies
+RUN npx playwright install --with-deps chromium
+
+WORKDIR /app
+
+# Copy workspace config
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY packages/core/package.json packages/core/
+COPY packages/web/package.json packages/web/
+
+# Install production dependencies only
+RUN pnpm install --frozen-lockfile --prod
+
+# Copy built artifacts
+COPY --from=build /app/packages/core/dist packages/core/dist
+COPY --from=build /app/packages/web/dist packages/web/dist
+
+WORKDIR /app/packages/web
+
+VOLUME /data/recipes
+
+ENV MISE_RECIPES_DIR=/data/recipes
+ENV MISE_PORT=3000
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
+  CMD curl -f http://localhost:3000/api/health || exit 1
+
+CMD ["node", "dist/server/index.js"]

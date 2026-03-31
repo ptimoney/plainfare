@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { serialiseRecipe } from "../src/parser/writer.js";
+import { serialiseRecipe } from "../src/functions/serialise.js";
 import type { Recipe } from "../src/types.js";
 
 const fullRecipe: Recipe = {

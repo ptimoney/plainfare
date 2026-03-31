@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseIngredientLine } from "../src/parser/ingredient.js";
+import { parseIngredientLine } from "../src/ingest/ingredient.js";
 
 describe("parseIngredientLine", () => {
   it("parses quantity + unit stuck together: 200g spaghetti", () => {

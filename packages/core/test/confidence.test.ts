@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildConfidenceReport } from "../src/parser/confidence.js";
+import { buildConfidenceReport } from "../src/ingest/confidence.js";
 
 describe("buildConfidenceReport", () => {
   it("calculates overall confidence from resolved fields", () => {

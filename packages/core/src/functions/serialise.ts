@@ -98,7 +98,7 @@ const STUCK_UNITS = new Set(["g", "kg", "mg", "l", "ml", "dl", "oz", "lb", "lbs"
 // Units that read naturally with "of": "1 handful of parsley", "a pinch of salt"
 const OF_UNITS = new Set([
   "handful", "handfuls", "pinch", "pinches", "bunch", "bunches",
-  "clove", "cloves",
+  "clove", "cloves", "tin", "tins",
   "sprig", "sprigs", "bottle", "bottles", "packet", "packets",
   "can", "cans", "piece", "pieces", "slice", "slices",
   "sheet", "sheets", "stick", "sticks",

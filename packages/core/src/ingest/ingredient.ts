@@ -10,6 +10,7 @@ const KNOWN_UNITS = [
   "bunch", "bunches",
   "handful", "handfuls",
   "clove", "cloves",
+  "tin", "tins",
   "slice", "slices",
   "piece", "pieces",
   "can", "cans",
@@ -34,11 +35,14 @@ const A_UNIT_OF_RE = new RegExp(
 );
 
 export function parseIngredientLine(line: string): Ingredient {
-  const trimmed = line.replace(/^[-*]\s*/, "").trim();
+  let trimmed = line.replace(/^[-*]\s*/, "").trim();
 
   if (!trimmed) {
     return { name: "" };
   }
+
+  // Normalise fractions before parsing: "1/2" → "0.5", "3/4" → "0.75"
+  trimmed = normaliseFractions(trimmed);
 
   // Split off note after last comma (but only if what follows looks like a note, not part of the name)
   const { main, note } = splitNote(trimmed);
@@ -93,6 +97,21 @@ export function parseIngredientLine(line: string): Ingredient {
 
   // No quantity found — whole string is the name
   return { name: main, ...(note && { note }) };
+}
+
+// Normalise fraction patterns at the start of a line:
+// "1/2 cup" → "0.5 cup", "3/4 tsp" → "0.75 tsp"
+// Also handles mixed: "1 1/2 cups" → "1.5 cups"
+function normaliseFractions(text: string): string {
+  // Mixed number: "1 1/2" → "1.5"
+  text = text.replace(/^(\d+)\s+(\d+)\/(\d+)/, (_m, whole, num, den) => {
+    return String(parseInt(whole) + parseInt(num) / parseInt(den));
+  });
+  // Simple fraction: "1/2" → "0.5"
+  text = text.replace(/^(\d+)\/(\d+)/, (_m, num, den) => {
+    return String(parseInt(num) / parseInt(den));
+  });
+  return text;
 }
 
 function splitNote(text: string): { main: string; note?: string } {

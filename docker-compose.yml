@@ -1,0 +1,16 @@
+services:
+  mise:
+    build:
+      context: .
+      dockerfile: packages/web/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./recipes:/data/recipes
+    environment:
+      MISE_RECIPES_DIR: /data/recipes
+      # Uncomment and configure for AI ingestion:
+      # MISE_AI_ENDPOINT: https://api.openai.com
+      # MISE_AI_API_KEY: sk-...
+      # MISE_AI_MODEL: gpt-4o
+    restart: unless-stopped
