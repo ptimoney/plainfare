@@ -81,7 +81,10 @@ export function RecipeList() {
 
       {data && data.length === 0 && (
         <p style={{ color: "#888", textAlign: "center", marginTop: "2rem" }}>
-          {search ? "No recipes match your search." : "No recipes found. Add some .md files to your recipes directory."}
+          {search
+            ? "No recipes match your search."
+            : <>No recipes found. <Link to="/ingest" style={{ color: "#2563eb" }}>Import a recipe</Link> to get started.</>
+          }
         </p>
       )}
     </div>

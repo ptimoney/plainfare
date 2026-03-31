@@ -1,5 +1,5 @@
 import type { AiProvider } from "@mise/core";
-import { buildImageExtractionPrompt } from "@mise/core";
+import { buildImageExtractionPrompt, buildTextExtractionPrompt } from "@mise/core";
 import type { Config } from "../config.js";
 
 /**
@@ -50,6 +50,41 @@ export class OpenAiCompatibleProvider implements AiProvider {
                 text: "Extract the recipe from this image.",
               },
             ],
+          },
+        ],
+        max_tokens: 4096,
+      }),
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`AI provider error ${response.status}: ${body}`);
+    }
+
+    const data = await response.json() as {
+      choices: { message: { content: string } }[];
+    };
+
+    return data.choices[0].message.content;
+  }
+
+  async extractRecipeFromText(text: string): Promise<string> {
+    const response = await fetch(`${this.endpoint}/v1/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(this.apiKey && { Authorization: `Bearer ${this.apiKey}` }),
+      },
+      body: JSON.stringify({
+        model: this.model,
+        messages: [
+          {
+            role: "system",
+            content: buildTextExtractionPrompt(),
+          },
+          {
+            role: "user",
+            content: text,
           },
         ],
         max_tokens: 4096,

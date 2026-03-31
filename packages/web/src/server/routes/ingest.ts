@@ -17,6 +17,17 @@ export function createIngestRouter(jobQueue: JobQueue) {
         return { jobId };
       }),
 
+    fromText: publicProcedure
+      .input(
+        z.object({
+          text: z.string().min(1),
+        }),
+      )
+      .mutation(({ input }) => {
+        const jobId = jobQueue.enqueue("ai-text-ingest", input);
+        return { jobId };
+      }),
+
     fromUrl: publicProcedure
       .input(
         z.object({

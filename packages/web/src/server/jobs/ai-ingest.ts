@@ -1,13 +1,16 @@
 import { parseAiRecipeResponse } from "@mise/core";
-import type { Recipe } from "@mise/core";
+import type { AiProvider, Recipe } from "@mise/core";
 import type { JobHandler } from "./queue.js";
-import type { OpenAiCompatibleProvider } from "../services/ai.js";
 import type { RecipeLibrary } from "../services/library.js";
 
-export interface AiIngestInput {
+export interface AiImageIngestInput {
   image: string; // base64-encoded image data
   mimeType: string;
   filename?: string;
+}
+
+export interface AiTextIngestInput {
+  text: string;
 }
 
 export interface AiIngestOutput {
@@ -16,9 +19,9 @@ export interface AiIngestOutput {
 }
 
 export function createAiIngestHandler(
-  aiProvider: OpenAiCompatibleProvider,
+  aiProvider: AiProvider,
   library: RecipeLibrary,
-): JobHandler<AiIngestInput, AiIngestOutput> {
+): JobHandler<AiImageIngestInput, AiIngestOutput> {
   return {
     type: "ai-ingest",
     async execute(input, report) {
@@ -43,6 +46,35 @@ export function createAiIngestHandler(
       report(90);
 
       // Write to library
+      const entry = await library.add(recipe);
+
+      report(100);
+
+      return {
+        slug: entry.slug,
+        recipe: entry.recipe,
+      };
+    },
+  };
+}
+
+export function createAiTextIngestHandler(
+  aiProvider: AiProvider,
+  library: RecipeLibrary,
+): JobHandler<AiTextIngestInput, AiIngestOutput> {
+  return {
+    type: "ai-text-ingest",
+    async execute(input, report) {
+      report(10);
+
+      const rawResponse = await aiProvider.extractRecipeFromText(input.text);
+
+      report(70);
+
+      const { recipe } = parseAiRecipeResponse(rawResponse);
+
+      report(90);
+
       const entry = await library.add(recipe);
 
       report(100);

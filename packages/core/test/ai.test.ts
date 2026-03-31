@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseAiRecipeResponse, buildImageExtractionPrompt } from "../src/ingest/ai.js";
+import { parseAiRecipeResponse, buildImageExtractionPrompt, buildTextExtractionPrompt } from "../src/ingest/ai.js";
 
 describe("buildImageExtractionPrompt", () => {
   it("returns a non-empty prompt string", () => {
@@ -7,6 +7,31 @@ describe("buildImageExtractionPrompt", () => {
     expect(prompt.length).toBeGreaterThan(100);
     expect(prompt).toContain("ingredientGroups");
     expect(prompt).toContain("JSON");
+  });
+});
+
+describe("buildTextExtractionPrompt", () => {
+  it("returns a non-empty prompt with JSON schema", () => {
+    const prompt = buildTextExtractionPrompt();
+    expect(prompt.length).toBeGreaterThan(100);
+    expect(prompt).toContain("ingredientGroups");
+    expect(prompt).toContain("JSON");
+  });
+
+  it("instructs parsing text, not images", () => {
+    const prompt = buildTextExtractionPrompt();
+    expect(prompt).toContain("Parse the provided recipe text");
+    expect(prompt).not.toContain("Extract the recipe from the provided image");
+  });
+
+  it("shares the same schema as the image prompt", () => {
+    const textPrompt = buildTextExtractionPrompt();
+    const imagePrompt = buildImageExtractionPrompt();
+    // Both should contain the same JSON schema fields
+    for (const field of ["title", "ingredientGroups", "steps", "serves", "nutrition"]) {
+      expect(textPrompt).toContain(field);
+      expect(imagePrompt).toContain(field);
+    }
   });
 });
 

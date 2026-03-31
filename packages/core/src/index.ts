@@ -20,7 +20,7 @@ export type { IngestUrlOptions, IngestUrlResult } from "./ingest/url.js";
 export { extractFromJsonLd } from "./ingest/jsonld.js";
 export { htmlToMarkdown } from "./ingest/html-to-markdown.js";
 export type { AiProvider } from "./ingest/ai.js";
-export { buildImageExtractionPrompt, parseAiRecipeResponse } from "./ingest/ai.js";
+export { buildImageExtractionPrompt, buildTextExtractionPrompt, parseAiRecipeResponse } from "./ingest/ai.js";
 
 // Functions — operations on a Recipe AST
 export { serialiseRecipe } from "./functions/serialise.js";

@@ -10,7 +10,8 @@
     "dev": "tsx watch src/server/index.ts",
     "dev:ui": "vite dev",
     "start": "node dist/server/index.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:ai": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.14.3",

@@ -8,7 +8,7 @@ import { RecipeLibrary } from "./services/library.js";
 import { createAppRouter } from "./router.js";
 import { JobQueue } from "./jobs/queue.js";
 import { OpenAiCompatibleProvider } from "./services/ai.js";
-import { createAiIngestHandler } from "./jobs/ai-ingest.js";
+import { createAiIngestHandler, createAiTextIngestHandler } from "./jobs/ai-ingest.js";
 import { createBrowserFetchHandler } from "./jobs/browser-fetch.js";
 import { closeBrowser } from "./services/browser.js";
 import type { AppContext } from "./trpc.js";
@@ -24,6 +24,7 @@ jobQueue.registerHandler(createBrowserFetchHandler(library));
 if (config.MISE_AI_ENDPOINT) {
   const aiProvider = new OpenAiCompatibleProvider(config);
   jobQueue.registerHandler(createAiIngestHandler(aiProvider, library));
+  jobQueue.registerHandler(createAiTextIngestHandler(aiProvider, library));
   console.log(`AI ingestion enabled (model: ${config.MISE_AI_MODEL})`);
 }
 

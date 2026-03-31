@@ -4,28 +4,26 @@ import { buildConfidenceReport } from "./confidence.js";
 /**
  * Interface for AI providers that can extract recipes from various inputs.
  * The web service provides the concrete implementation; core defines the contract.
+ * Each extraction type has its own method — they have different API call shapes
+ * (vision messages vs plain text) so a single generic method would push branching
+ * into every provider.
  */
 export interface AiProvider {
   /** Send an image to a vision-capable LLM and get back raw JSON text */
   extractRecipeFromImage(image: Uint8Array, mimeType: string): Promise<string>;
+  /** Send plain text (pasted recipe, transcript, etc.) to an LLM and get back raw JSON text */
+  extractRecipeFromText(text: string): Promise<string>;
 }
 
-/**
- * Build the system prompt for image-based recipe extraction.
- * This lives in core so the prompt stays in sync with the Recipe type.
- */
-export function buildImageExtractionPrompt(): string {
-  return `You are a recipe extraction assistant. Extract the recipe from the provided image and return it as a JSON object.
-
-Return ONLY valid JSON with no markdown formatting, no code fences, no explanation. The JSON must conform to this schema:
-
-{
+/** Shared JSON schema for all extraction prompts — keeps Recipe type and prompt in sync */
+function recipeJsonSchema(): string {
+  return `{
   "title": "string (required)",
   "description": "string or null",
   "image": "string or null (URL if visible)",
   "source": "string or null (URL or attribution if visible)",
   "tags": ["string"] or null,
-  "serves": "string or null (e.g. \"4\", \"6-8\", \"12 cookies\")",
+  "serves": "string or null (e.g. "4", "6-8", "12 cookies")",
   "time": { "prep": number_or_null, "cook": number_or_null } or null (in minutes),
   "nutrition": {
     "calories": number_or_null,
@@ -36,13 +34,13 @@ Return ONLY valid JSON with no markdown formatting, no code fences, no explanati
   } or null,
   "ingredientGroups": [
     {
-      "title": "string or null (group name like \"Sauce\", \"Dough\")",
+      "title": "string or null (group name like "Sauce", "Dough")",
       "ingredients": [
         {
           "quantity": number_or_null,
-          "unit": "string or null (e.g. \"g\", \"cups\", \"tbsp\")",
+          "unit": "string or null (e.g. "g", "cups", "tbsp")",
           "name": "string (required)",
-          "note": "string or null (e.g. \"finely grated\", \"to taste\")"
+          "note": "string or null (e.g. "finely grated", "to taste")"
         }
       ]
     }
@@ -54,15 +52,48 @@ Return ONLY valid JSON with no markdown formatting, no code fences, no explanati
     }
   ],
   "notes": "string or null"
+}`;
 }
 
-Rules:
-- Extract all visible information from the image
+/** Shared extraction rules appended to all prompts */
+function extractionRules(): string {
+  return `Rules:
 - Use metric units where possible, but preserve the original if clearly imperial
 - If a field is not visible or cannot be determined, use null
 - For ingredients without a quantity (e.g. "salt to taste"), set quantity to null and put "to taste" in the note field
 - Number method steps sequentially starting from 1
 - If ingredients are grouped (e.g. "For the sauce:"), use the group title; otherwise use a single group with title null`;
+}
+
+/**
+ * Build the system prompt for image-based recipe extraction.
+ * This lives in core so the prompt stays in sync with the Recipe type.
+ */
+export function buildImageExtractionPrompt(): string {
+  return `You are a recipe extraction assistant. Extract the recipe from the provided image and return it as a JSON object.
+
+Return ONLY valid JSON with no markdown formatting, no code fences, no explanation. The JSON must conform to this schema:
+
+${recipeJsonSchema()}
+
+${extractionRules()}
+- Extract all visible information from the image`;
+}
+
+/**
+ * Build the system prompt for text-based recipe extraction.
+ * Used when a user pastes raw recipe text, a transcript, or other unstructured content.
+ */
+export function buildTextExtractionPrompt(): string {
+  return `You are a recipe extraction assistant. Parse the provided recipe text and return it as a JSON object.
+
+Return ONLY valid JSON with no markdown formatting, no code fences, no explanation. The JSON must conform to this schema:
+
+${recipeJsonSchema()}
+
+${extractionRules()}
+- Extract all information present in the text
+- Infer reasonable tags from the recipe content if not explicitly listed`;
 }
 
 /**
