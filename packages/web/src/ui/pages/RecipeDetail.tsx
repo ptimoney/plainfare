@@ -31,21 +31,41 @@ function ServingsAdjuster({ serves, onChange }: { serves: number; onChange: (n: 
   );
 }
 
-function RecipeHeader({ recipe, targetServings, onServingsChange }: {
+function MultiplierSelector({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  const options = [1, 2, 3, 4, 5];
+  return (
+    <span className={styles.servingsAdjuster}>
+      {options.map((n) => (
+        <button
+          key={n}
+          className={`${styles.multiplierBtn} ${n === value ? styles.multiplierActive : ""}`}
+          onClick={() => onChange(n)}
+        >
+          {n}x
+        </button>
+      ))}
+    </span>
+  );
+}
+
+function RecipeHeader({ recipe, targetServings, onServingsChange, multiplier, onMultiplierChange }: {
   recipe: Recipe;
   targetServings: number | null;
   onServingsChange: (n: number) => void;
+  multiplier: number;
+  onMultiplierChange: (n: number) => void;
 }) {
+  const hasServes = targetServings != null;
   return (
     <>
       <h1 className={styles.title}>{recipe.title}</h1>
       {recipe.description && <p className={styles.description}>{recipe.description}</p>}
       <div className={styles.metadata}>
-        {targetServings != null ? (
+        {hasServes ? (
           <ServingsAdjuster serves={targetServings} onChange={onServingsChange} />
-        ) : recipe.serves ? (
-          <span>Serves {recipe.serves}</span>
-        ) : null}
+        ) : (
+          <MultiplierSelector value={multiplier} onChange={onMultiplierChange} />
+        )}
         {recipe.time?.prep != null && <span>{recipe.time.prep} min prep</span>}
         {recipe.time?.cook != null && <span>{recipe.time.cook} min cook</span>}
         {recipe.source && (
@@ -190,14 +210,17 @@ export function RecipeDetail() {
   const originalServings = data?.recipe.serves ? parseInt(data.recipe.serves, 10) : null;
   const hasNumericServes = originalServings != null && !isNaN(originalServings);
   const [targetServings, setTargetServings] = useState<number | null>(null);
+  const [multiplier, setMultiplier] = useState(1);
 
   const recipe = useMemo(() => {
     if (!data) return null;
-    if (targetServings == null || !hasNumericServes || targetServings === originalServings) {
-      return data.recipe;
+    if (hasNumericServes) {
+      if (targetServings == null || targetServings === originalServings) return data.recipe;
+      return scaleRecipe(data.recipe, targetServings);
     }
-    return scaleRecipe(data.recipe, targetServings);
-  }, [data, targetServings, hasNumericServes, originalServings]);
+    if (multiplier === 1) return data.recipe;
+    return scaleRecipe(data.recipe, multiplier);
+  }, [data, targetServings, hasNumericServes, originalServings, multiplier]);
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p className={styles.error}>Error: {error.message}</p>;
@@ -232,6 +255,8 @@ export function RecipeDetail() {
         recipe={recipe}
         targetServings={hasNumericServes ? (targetServings ?? originalServings) : null}
         onServingsChange={setTargetServings}
+        multiplier={multiplier}
+        onMultiplierChange={setMultiplier}
       />
       <IngredientList groups={recipe.ingredientGroups} />
       <MethodSteps steps={recipe.steps} />

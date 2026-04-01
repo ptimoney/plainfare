@@ -51,6 +51,7 @@ export function RecipeList() {
             <Tag key={tag} active={selectedTags.includes(tag)} onClick={() => toggleTag(tag)}>
               {tag}
             </Tag>
+
           ))}
         </div>
       )}
@@ -72,7 +73,13 @@ export function RecipeList() {
             {entry.recipe.tags && entry.recipe.tags.length > 0 && (
               <div className={styles.tags}>
                 {entry.recipe.tags.map((tag) => (
-                  <Tag key={tag}>{tag}</Tag>
+                  <Tag
+                    key={tag}
+                    active={selectedTags.includes(tag)}
+                    onClick={(e) => { e.preventDefault(); toggleTag(tag); }}
+                  >
+                    {tag}
+                  </Tag>
                 ))}
               </div>
             )}

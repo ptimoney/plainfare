@@ -3,7 +3,7 @@ import styles from "./Tag.module.css";
 interface TagProps {
   children: React.ReactNode;
   active?: boolean;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 export function Tag({ children, active, onClick }: TagProps) {

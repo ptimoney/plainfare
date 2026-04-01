@@ -5,7 +5,6 @@ import {
   parseRecipe,
   ingestFromUrl,
   serialiseRecipe,
-  scaleRecipe,
 } from "@plainfare/core";
 import type { ConfidenceLevel } from "@plainfare/core";
 
@@ -14,11 +13,9 @@ export const ingestCommand = new Command("ingest")
   .argument("<source>", "Path to a .md file or a URL")
   .option("--json", "Output parsed recipe as JSON instead of canonical markdown")
   .option("-o, --output <file>", "Write to file instead of stdout")
-  .option("--scale <servings>", "Scale the recipe to a target number of servings")
   .action(async (source: string, opts: {
     json?: boolean;
     output?: string;
-    scale?: string;
   }) => {
     // Determine source type and ingest
     const isUrl = /^https?:\/\//i.test(source);
@@ -32,21 +29,11 @@ export const ingestCommand = new Command("ingest")
       result = parseRecipe(markdown);
     }
 
-    let { recipe } = result;
-
-    // Apply scaling if requested
-    if (opts.scale) {
-      const target = parseFloat(opts.scale);
-      if (isNaN(target) || target <= 0) {
-        console.error(`Invalid scale value: ${opts.scale}`);
-        process.exit(1);
-      }
-      recipe = scaleRecipe(recipe, target);
-    }
+    const { recipe } = result;
 
     // Output
     if (opts.json) {
-      console.log(JSON.stringify({ ...result, recipe }, null, 2));
+      console.log(JSON.stringify(result, null, 2));
     } else {
       const canonical = serialiseRecipe(recipe);
       if (opts.output) {
