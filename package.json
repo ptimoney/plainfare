@@ -6,7 +6,7 @@
     "build": "pnpm --filter @mise/core run build && pnpm --filter @mise/cli run build",
     "test": "pnpm -r run test",
     "test:ai": "pnpm --filter @mise/web run test:ai",
-    "dev": "kill $(lsof -ti:3000) 2>/dev/null; MISE_RECIPES_DIR=$PWD/recipes pnpm --filter @mise/web run dev & pnpm --filter @mise/web run dev:ui & wait",
+    "dev": "kill $(lsof -ti:3141) 2>/dev/null; MISE_RECIPES_DIR=$PWD/recipes pnpm --filter @mise/web run dev & pnpm --filter @mise/web run dev:ui & wait",
     "dev:server": "MISE_RECIPES_DIR=$PWD/recipes pnpm --filter @mise/web run dev",
     "typecheck": "pnpm -r exec tsc --noEmit",
     "clean": "pnpm -r exec rm -rf dist *.tsbuildinfo"

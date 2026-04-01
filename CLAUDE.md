@@ -233,7 +233,7 @@ Environment variables validated with zod:
 | Variable | Default | Description |
 |---|---|---|
 | `MISE_RECIPES_DIR` | `./recipes` | Path to recipe `.md` files |
-| `MISE_PORT` | `3000` | Server port |
+| `MISE_PORT` | `3141` | Server port |
 | `MISE_AI_ENDPOINT` | — | OpenAI-compatible API base URL |
 | `MISE_AI_API_KEY` | — | API key for AI provider |
 | `MISE_AI_MODEL` | `gpt-4o` | Model name for vision extraction |

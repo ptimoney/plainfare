@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const configSchema = z.object({
   MISE_RECIPES_DIR: z.string().default("./recipes"),
-  MISE_PORT: z.coerce.number().default(3000),
+  MISE_PORT: z.coerce.number().default(3141),
 
   // AI provider (optional — service works without it)
   MISE_AI_ENDPOINT: z.string().url().optional(),

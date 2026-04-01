@@ -11,7 +11,7 @@ cp .env.example .env
 # 2. Run
 docker compose up -d
 
-# 3. Open http://localhost:3000
+# 3. Open http://localhost:3141
 ```
 
 That's it. Recipes are stored in `./recipes/` as plain markdown files.
@@ -25,7 +25,7 @@ get started — only the defaults run out of the box, everything else is opt-in.
 
 | Variable | Default | Description |
 |---|---|---|
-| `MISE_PORT` | `3000` | Server port |
+| `MISE_PORT` | `3141` | Server port |
 | `MISE_BASE_URL` | — | Public URL (e.g. `https://mise.example.com`). Used in Telegram replies and anywhere the app needs to link back to itself. |
 | `MISE_RECIPES_DIR` | `./recipes` | Host path to recipe files (mapped to `/data/recipes` in container) |
 | `MISE_AI_ENDPOINT` | — | OpenAI-compatible API URL (e.g. `https://api.openai.com`, `http://ollama:11434`) |
@@ -91,7 +91,7 @@ and public access.
 
 ```nginx
 location / {
-    proxy_pass http://127.0.0.1:3000;
+    proxy_pass http://127.0.0.1:3141;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -114,7 +114,7 @@ local Ollama).
 
 ```
 mise.example.com {
-    reverse_proxy localhost:3000
+    reverse_proxy localhost:3141
 }
 ```
 
@@ -185,7 +185,7 @@ pnpm --filter @mise/web run build
 
 # Set environment
 export MISE_RECIPES_DIR=/path/to/recipes
-export MISE_PORT=3000
+export MISE_PORT=3141
 # ... other env vars as needed
 
 # Start
@@ -197,7 +197,7 @@ pnpm --filter @mise/web start
 ## Health check
 
 ```bash
-curl http://localhost:3000/api/health
+curl http://localhost:3141/api/health
 # {"status":"ok","recipes":12,"ai":true}
 ```
 

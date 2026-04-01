@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: packages/web/Dockerfile
     ports:
-      - "${MISE_PORT:-3000}:3000"
+      - "${MISE_PORT:-3141}:3141"
     volumes:
       - ${MISE_RECIPES_DIR:-./recipes}:/data/recipes
     env_file:

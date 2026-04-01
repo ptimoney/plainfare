@@ -47,11 +47,11 @@ WORKDIR /app/packages/web
 VOLUME /data/recipes
 
 ENV MISE_RECIPES_DIR=/data/recipes
-ENV MISE_PORT=3000
+ENV MISE_PORT=3141
 
-EXPOSE 3000
+EXPOSE 3141
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
-  CMD curl -f http://localhost:3000/api/health || exit 1
+  CMD curl -f http://localhost:3141/api/health || exit 1
 
 CMD ["node", "dist/server/index.js"]
