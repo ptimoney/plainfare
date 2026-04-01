@@ -7,7 +7,7 @@ export function createIngestRouter(jobQueue: JobQueue) {
     fromImage: publicProcedure
       .input(
         z.object({
-          image: z.string(), // base64-encoded
+          image: z.string().max(10_000_000, "Image must be under 10MB"), // base64-encoded
           mimeType: z.string(),
           filename: z.string().optional(),
         }),

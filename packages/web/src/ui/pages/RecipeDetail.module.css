@@ -83,6 +83,72 @@
   color: var(--color-text-secondary);
 }
 
+.headerActions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.editorTextarea {
+  width: 100%;
+  min-height: 60vh;
+  padding: var(--space-md);
+  font-family: monospace;
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+}
+
+.editorActions {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.deleteConfirm {
+  display: inline-flex;
+  gap: var(--space-sm);
+  align-items: center;
+  font-size: var(--font-size-sm);
+}
+
+.servingsAdjuster {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.servingsBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  line-height: 1;
+}
+
+.servingsBtn:hover {
+  background: var(--color-surface-hover);
+}
+
+.servingsValue {
+  min-width: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+}
+
 .error {
   color: var(--color-error-text);
 }

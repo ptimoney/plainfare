@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { readdir, readFile, stat, writeFile } from "node:fs/promises";
+import { readdir, readFile, stat, writeFile, unlink } from "node:fs/promises";
 import { watch } from "chokidar";
 import { parseRecipe, serialiseRecipe } from "@plainfare/core";
 import type { Recipe, ConfidenceReport } from "@plainfare/core";
@@ -71,7 +71,7 @@ export class RecipeLibrary {
   }
 
   async add(recipe: Recipe): Promise<RecipeEntry> {
-    const slug = this.slugify(recipe.title);
+    const slug = this.uniqueSlug(this.slugify(recipe.title));
     const filePath = resolve(this.recipesDir, `${slug}.md`);
     const markdown = serialiseRecipe(recipe);
 
@@ -88,6 +88,35 @@ export class RecipeLibrary {
     };
     this.entries.set(filePath, entry);
     return entry;
+  }
+
+  async update(slug: string, markdown: string): Promise<RecipeEntry> {
+    const existing = this.get(slug);
+    if (!existing) throw new Error(`Recipe not found: ${slug}`);
+
+    const { recipe, confidence } = parseRecipe(markdown);
+
+    this.ownWrites.add(existing.filePath);
+    await writeFile(existing.filePath, markdown, "utf-8");
+
+    const entry: RecipeEntry = {
+      filePath: existing.filePath,
+      slug: existing.slug,
+      recipe,
+      confidence,
+      lastModified: new Date(),
+    };
+    this.entries.set(existing.filePath, entry);
+    return entry;
+  }
+
+  async remove(slug: string): Promise<void> {
+    const existing = this.get(slug);
+    if (!existing) throw new Error(`Recipe not found: ${slug}`);
+
+    this.ownWrites.add(existing.filePath);
+    await unlink(existing.filePath);
+    this.entries.delete(existing.filePath);
   }
 
   async close(): Promise<void> {
@@ -159,5 +188,13 @@ export class RecipeLibrary {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
+  }
+
+  private uniqueSlug(base: string): string {
+    const slugs = new Set(Array.from(this.entries.values()).map((e) => e.slug));
+    if (!slugs.has(base)) return base;
+    let n = 2;
+    while (slugs.has(`${base}-${n}`)) n++;
+    return `${base}-${n}`;
   }
 }

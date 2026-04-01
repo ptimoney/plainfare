@@ -5,3 +5,16 @@
   border-radius: var(--radius-pill);
   color: var(--color-text-muted);
 }
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  background: var(--color-surface-hover);
+}
+
+.active {
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}

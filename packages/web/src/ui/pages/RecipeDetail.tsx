@@ -1,6 +1,9 @@
-import { useParams, Link } from "react-router-dom";
+import { useState, useMemo } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { trpc } from "../lib/trpc.js";
 import { Tag } from "../components/Tag.js";
+import { Button } from "../components/Button.js";
+import { scaleRecipe, serialiseRecipe } from "@plainfare/core";
 import type { Recipe } from "@plainfare/core";
 import styles from "./RecipeDetail.module.css";
 
@@ -17,13 +20,32 @@ function formatIngredient(ing: { quantity?: number; unit?: string; name: string;
   return result;
 }
 
-function RecipeHeader({ recipe }: { recipe: Recipe }) {
+function ServingsAdjuster({ serves, onChange }: { serves: number; onChange: (n: number) => void }) {
+  return (
+    <span className={styles.servingsAdjuster}>
+      Serves{" "}
+      <button className={styles.servingsBtn} onClick={() => onChange(Math.max(1, serves - 1))}>-</button>
+      <span className={styles.servingsValue}>{serves}</span>
+      <button className={styles.servingsBtn} onClick={() => onChange(serves + 1)}>+</button>
+    </span>
+  );
+}
+
+function RecipeHeader({ recipe, targetServings, onServingsChange }: {
+  recipe: Recipe;
+  targetServings: number | null;
+  onServingsChange: (n: number) => void;
+}) {
   return (
     <>
       <h1 className={styles.title}>{recipe.title}</h1>
       {recipe.description && <p className={styles.description}>{recipe.description}</p>}
       <div className={styles.metadata}>
-        {recipe.serves && <span>Serves {recipe.serves}</span>}
+        {targetServings != null ? (
+          <ServingsAdjuster serves={targetServings} onChange={onServingsChange} />
+        ) : recipe.serves ? (
+          <span>Serves {recipe.serves}</span>
+        ) : null}
         {recipe.time?.prep != null && <span>{recipe.time.prep} min prep</span>}
         {recipe.time?.cook != null && <span>{recipe.time.cook} min cook</span>}
         {recipe.source && (
@@ -104,23 +126,113 @@ function RecipeNotes({ notes }: { notes?: string }) {
   );
 }
 
+function RecipeEditor({ slug, initialMarkdown, onSaved, onCancel }: {
+  slug: string;
+  initialMarkdown: string;
+  onSaved: () => void;
+  onCancel: () => void;
+}) {
+  const [markdown, setMarkdown] = useState(initialMarkdown);
+  const updateMutation = trpc.recipes.update.useMutation({ onSuccess: onSaved });
+
+  return (
+    <div className={styles.editor}>
+      <textarea
+        className={styles.editorTextarea}
+        value={markdown}
+        onChange={(e) => setMarkdown(e.target.value)}
+        spellCheck
+      />
+      <div className={styles.editorActions}>
+        <Button onClick={() => updateMutation.mutate({ slug, markdown })}>
+          {updateMutation.isPending ? "Saving..." : "Save"}
+        </Button>
+        <Button variant="secondary" onClick={onCancel}>Cancel</Button>
+        {updateMutation.isError && (
+          <span className={styles.error}>{updateMutation.error.message}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DeleteButton({ slug }: { slug: string }) {
+  const [confirming, setConfirming] = useState(false);
+  const navigate = useNavigate();
+  const deleteMutation = trpc.recipes.delete.useMutation({
+    onSuccess: () => navigate("/"),
+  });
+
+  if (confirming) {
+    return (
+      <span className={styles.deleteConfirm}>
+        Delete this recipe?{" "}
+        <Button variant="secondary" onClick={() => deleteMutation.mutate({ slug })}>
+          {deleteMutation.isPending ? "Deleting..." : "Yes, delete"}
+        </Button>
+        <Button variant="secondary" onClick={() => setConfirming(false)}>No</Button>
+      </span>
+    );
+  }
+
+  return <Button variant="secondary" onClick={() => setConfirming(true)}>Delete</Button>;
+}
+
 export function RecipeDetail() {
   const { slug } = useParams<{ slug: string }>();
+  const utils = trpc.useUtils();
   const { data, isLoading, error } = trpc.recipes.get.useQuery(
     { slug: slug! },
     { enabled: !!slug },
   );
 
+  const [editing, setEditing] = useState(false);
+  const originalServings = data?.recipe.serves ? parseInt(data.recipe.serves, 10) : null;
+  const hasNumericServes = originalServings != null && !isNaN(originalServings);
+  const [targetServings, setTargetServings] = useState<number | null>(null);
+
+  const recipe = useMemo(() => {
+    if (!data) return null;
+    if (targetServings == null || !hasNumericServes || targetServings === originalServings) {
+      return data.recipe;
+    }
+    return scaleRecipe(data.recipe, targetServings);
+  }, [data, targetServings, hasNumericServes, originalServings]);
+
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p className={styles.error}>Error: {error.message}</p>;
-  if (!data) return <p>Recipe not found.</p>;
+  if (!recipe) return <p>Recipe not found.</p>;
 
-  const { recipe } = data;
+  if (editing) {
+    return (
+      <article>
+        <Link to="/" className={styles.backLink}>&larr; All recipes</Link>
+        <h1 className={styles.title}>{recipe.title}</h1>
+        <RecipeEditor
+          slug={slug!}
+          initialMarkdown={serialiseRecipe(data!.recipe)}
+          onSaved={() => {
+            setEditing(false);
+            utils.recipes.get.invalidate({ slug: slug! });
+          }}
+          onCancel={() => setEditing(false)}
+        />
+      </article>
+    );
+  }
 
   return (
     <article>
       <Link to="/" className={styles.backLink}>&larr; All recipes</Link>
-      <RecipeHeader recipe={recipe} />
+      <div className={styles.headerActions}>
+        <Button variant="secondary" onClick={() => setEditing(true)}>Edit</Button>
+        <DeleteButton slug={slug!} />
+      </div>
+      <RecipeHeader
+        recipe={recipe}
+        targetServings={hasNumericServes ? (targetServings ?? originalServings) : null}
+        onServingsChange={setTargetServings}
+      />
       <IngredientList groups={recipe.ingredientGroups} />
       <MethodSteps steps={recipe.steps} />
       <NutritionSummary nutrition={recipe.nutrition} />

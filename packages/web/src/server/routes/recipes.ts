@@ -20,4 +20,17 @@ export const recipesRouter = router({
       if (!entry) throw new Error(`Recipe not found: ${input.slug}`);
       return entry;
     }),
+
+  update: publicProcedure
+    .input(z.object({ slug: z.string(), markdown: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.library.update(input.slug, input.markdown);
+    }),
+
+  delete: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.library.remove(input.slug);
+      return { ok: true };
+    }),
 });

@@ -1,4 +1,11 @@
 .search {
+  margin-bottom: var(--space-md);
+}
+
+.tagFilter {
+  display: flex;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
   margin-bottom: var(--space-2xl);
 }
 

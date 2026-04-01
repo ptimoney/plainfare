@@ -2,8 +2,13 @@ import styles from "./Tag.module.css";
 
 interface TagProps {
   children: React.ReactNode;
+  active?: boolean;
+  onClick?: () => void;
 }
 
-export function Tag({ children }: TagProps) {
-  return <span className={styles.tag}>{children}</span>;
+export function Tag({ children, active, onClick }: TagProps) {
+  const cls = [styles.tag, active && styles.active, onClick && styles.clickable]
+    .filter(Boolean)
+    .join(" ");
+  return <span className={cls} onClick={onClick}>{children}</span>;
 }
