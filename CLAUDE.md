@@ -238,6 +238,8 @@ Environment variables validated with zod:
 | `MISE_AI_API_KEY` | — | API key for AI provider |
 | `MISE_AI_MODEL` | `gpt-4o` | Model name for vision extraction |
 | `MISE_JOB_CONCURRENCY` | `2` | Max concurrent background jobs |
+| `MISE_BASE_URL` | — | Public-facing URL (used in Telegram replies, etc.) |
+| `MISE_TELEGRAM_BOT_TOKEN` | — | Telegram bot token (enables mobile ingestion) |
 
 ### Docker Deployment
 

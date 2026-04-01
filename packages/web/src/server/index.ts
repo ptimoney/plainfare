@@ -11,6 +11,7 @@ import { OpenAiCompatibleProvider } from "./services/ai.js";
 import { createAiIngestHandler, createAiTextIngestHandler } from "./jobs/ai-ingest.js";
 import { createBrowserFetchHandler } from "./jobs/browser-fetch.js";
 import { closeBrowser } from "./services/browser.js";
+import { createTelegramBot } from "./services/telegram.js";
 import type { AppContext } from "./trpc.js";
 
 const config = loadConfig();
@@ -27,6 +28,11 @@ if (config.MISE_AI_ENDPOINT) {
   jobQueue.registerHandler(createAiTextIngestHandler(aiProvider, library));
   console.log(`AI ingestion enabled (model: ${config.MISE_AI_MODEL})`);
 }
+
+// Telegram bot (optional — only starts if token is configured)
+const telegramBot = config.MISE_TELEGRAM_BOT_TOKEN
+  ? createTelegramBot(config, jobQueue)
+  : null;
 
 const appRouter = createAppRouter(jobQueue);
 const app = new Hono();
@@ -68,6 +74,10 @@ async function main() {
   await library.initialize();
   console.log(`Loaded ${library.size} recipes from ${config.MISE_RECIPES_DIR}`);
 
+  if (telegramBot) {
+    await telegramBot.start();
+  }
+
   serve({ fetch: app.fetch, port: config.MISE_PORT }, () => {
     console.log(`mise running at http://localhost:${config.MISE_PORT}`);
   });
@@ -75,6 +85,7 @@ async function main() {
 
 // Graceful shutdown
 async function shutdown() {
+  if (telegramBot) await telegramBot.stop();
   await library.close();
   await closeBrowser();
   process.exit(0);

@@ -11,6 +11,12 @@ const configSchema = z.object({
 
   // Job queue
   MISE_JOB_CONCURRENCY: z.coerce.number().default(2),
+
+  // Public-facing URL (used in Telegram replies, etc.)
+  MISE_BASE_URL: z.string().url().optional(),
+
+  // Telegram bot (optional — enables mobile ingestion via Telegram)
+  MISE_TELEGRAM_BOT_TOKEN: z.string().optional(),
 });
 
 export type Config = z.infer<typeof configSchema>;
