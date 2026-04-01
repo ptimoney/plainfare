@@ -1,10 +1,10 @@
 {
-  "name": "@mise/cli",
+  "name": "@plainfare/cli",
   "version": "0.1.0",
   "description": "CLI — thin commands over core",
   "type": "module",
   "bin": {
-    "mise": "./dist/index.js"
+    "plainfare": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -17,7 +17,7 @@
     "vitest": "^3.0.0"
   },
   "dependencies": {
-    "@mise/core": "workspace:*",
+    "@plainfare/core": "workspace:*",
     "commander": "^13.0.0"
   }
 }

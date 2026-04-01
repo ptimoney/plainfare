@@ -1,15 +1,15 @@
 services:
-  mise:
+  plainfare:
     build:
       context: .
       dockerfile: packages/web/Dockerfile
     ports:
-      - "${MISE_PORT:-3141}:3141"
+      - "${PLAINFARE_PORT:-3141}:3141"
     volumes:
-      - ${MISE_RECIPES_DIR:-./recipes}:/data/recipes
+      - ${PLAINFARE_RECIPES_DIR:-./recipes}:/data/recipes
     env_file:
       - path: .env
         required: false
     environment:
-      MISE_RECIPES_DIR: /data/recipes
+      PLAINFARE_RECIPES_DIR: /data/recipes
     restart: unless-stopped

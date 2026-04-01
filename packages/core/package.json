@@ -1,5 +1,5 @@
 {
-  "name": "@mise/core",
+  "name": "@plainfare/core",
   "version": "0.1.0",
   "description": "Core library — types, parser, writer, ingredient parser",
   "type": "module",

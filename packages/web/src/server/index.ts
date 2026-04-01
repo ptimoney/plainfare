@@ -15,22 +15,22 @@ import { createTelegramBot } from "./services/telegram.js";
 import type { AppContext } from "./trpc.js";
 
 const config = loadConfig();
-const library = new RecipeLibrary(config.MISE_RECIPES_DIR);
-const jobQueue = new JobQueue(config.MISE_JOB_CONCURRENCY);
+const library = new RecipeLibrary(config.PLAINFARE_RECIPES_DIR);
+const jobQueue = new JobQueue(config.PLAINFARE_JOB_CONCURRENCY);
 
 // Register AI ingestion handler if AI provider is configured
 // Register job handlers
 jobQueue.registerHandler(createBrowserFetchHandler(library));
 
-if (config.MISE_AI_ENDPOINT) {
+if (config.PLAINFARE_AI_ENDPOINT) {
   const aiProvider = new OpenAiCompatibleProvider(config);
   jobQueue.registerHandler(createAiIngestHandler(aiProvider, library));
   jobQueue.registerHandler(createAiTextIngestHandler(aiProvider, library));
-  console.log(`AI ingestion enabled (model: ${config.MISE_AI_MODEL})`);
+  console.log(`AI ingestion enabled (model: ${config.PLAINFARE_AI_MODEL})`);
 }
 
 // Telegram bot (optional — only starts if token is configured)
-const telegramBot = config.MISE_TELEGRAM_BOT_TOKEN
+const telegramBot = config.PLAINFARE_TELEGRAM_BOT_TOKEN
   ? createTelegramBot(config, jobQueue)
   : null;
 
@@ -42,7 +42,7 @@ app.get("/api/health", (c) =>
   c.json({
     status: "ok",
     recipes: library.size,
-    ai: !!config.MISE_AI_ENDPOINT,
+    ai: !!config.PLAINFARE_AI_ENDPOINT,
   }),
 );
 
@@ -65,21 +65,21 @@ app.get("*", async (c) => {
     const html = await readFile(new URL("../../dist/ui/index.html", import.meta.url), "utf-8");
     return c.html(html);
   } catch {
-    return c.text("UI not built. Run: pnpm --filter @mise/web build:ui", 404);
+    return c.text("UI not built. Run: pnpm --filter @plainfare/web build:ui", 404);
   }
 });
 
 // Start
 async function main() {
   await library.initialize();
-  console.log(`Loaded ${library.size} recipes from ${config.MISE_RECIPES_DIR}`);
+  console.log(`Loaded ${library.size} recipes from ${config.PLAINFARE_RECIPES_DIR}`);
 
   if (telegramBot) {
     await telegramBot.start();
   }
 
-  serve({ fetch: app.fetch, port: config.MISE_PORT }, () => {
-    console.log(`mise running at http://localhost:${config.MISE_PORT}`);
+  serve({ fetch: app.fetch, port: config.PLAINFARE_PORT }, () => {
+    console.log(`plainfare running at http://localhost:${config.PLAINFARE_PORT}`);
   });
 }
 

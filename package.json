@@ -1,13 +1,13 @@
 {
-  "name": "mise",
+  "name": "plainfare",
   "private": true,
   "description": "Markdown-first recipe management tool",
   "scripts": {
-    "build": "pnpm --filter @mise/core run build && pnpm --filter @mise/cli run build",
+    "build": "pnpm --filter @plainfare/core run build && pnpm --filter @plainfare/cli run build",
     "test": "pnpm -r run test",
-    "test:ai": "pnpm --filter @mise/web run test:ai",
-    "dev": "kill $(lsof -ti:3141) 2>/dev/null; MISE_RECIPES_DIR=$PWD/recipes pnpm --filter @mise/web run dev & pnpm --filter @mise/web run dev:ui & wait",
-    "dev:server": "MISE_RECIPES_DIR=$PWD/recipes pnpm --filter @mise/web run dev",
+    "test:ai": "pnpm --filter @plainfare/web run test:ai",
+    "dev": "kill $(lsof -ti:3141) 2>/dev/null; PLAINFARE_RECIPES_DIR=$PWD/recipes pnpm --filter @plainfare/web run dev & pnpm --filter @plainfare/web run dev:ui & wait",
+    "dev:server": "PLAINFARE_RECIPES_DIR=$PWD/recipes pnpm --filter @plainfare/web run dev",
     "typecheck": "pnpm -r exec tsc --noEmit",
     "clean": "pnpm -r exec rm -rf dist *.tsbuildinfo"
   }

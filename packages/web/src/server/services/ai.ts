@@ -1,5 +1,5 @@
-import type { AiProvider } from "@mise/core";
-import { buildImageExtractionPrompt, buildTextExtractionPrompt } from "@mise/core";
+import type { AiProvider } from "@plainfare/core";
+import { buildImageExtractionPrompt, buildTextExtractionPrompt } from "@plainfare/core";
 import type { Config } from "../config.js";
 
 /**
@@ -12,13 +12,13 @@ export class OpenAiCompatibleProvider implements AiProvider {
   private apiKey: string;
   private model: string;
 
-  constructor(config: Pick<Config, "MISE_AI_ENDPOINT" | "MISE_AI_API_KEY" | "MISE_AI_MODEL">) {
-    if (!config.MISE_AI_ENDPOINT) {
-      throw new Error("MISE_AI_ENDPOINT is required for AI ingestion");
+  constructor(config: Pick<Config, "PLAINFARE_AI_ENDPOINT" | "PLAINFARE_AI_API_KEY" | "PLAINFARE_AI_MODEL">) {
+    if (!config.PLAINFARE_AI_ENDPOINT) {
+      throw new Error("PLAINFARE_AI_ENDPOINT is required for AI ingestion");
     }
-    this.endpoint = config.MISE_AI_ENDPOINT;
-    this.apiKey = config.MISE_AI_API_KEY || "";
-    this.model = config.MISE_AI_MODEL;
+    this.endpoint = config.PLAINFARE_AI_ENDPOINT;
+    this.apiKey = config.PLAINFARE_AI_API_KEY || "";
+    this.model = config.PLAINFARE_AI_MODEL;
   }
 
   async extractRecipeFromImage(image: Uint8Array, mimeType: string): Promise<string> {

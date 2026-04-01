@@ -1,0 +1,7 @@
+.tag {
+  font-size: var(--font-size-xs);
+  background: var(--color-surface-alt);
+  padding: 0.15rem var(--space-sm);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-muted);
+}

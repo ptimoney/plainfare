@@ -18,8 +18,8 @@ COPY packages/core/ packages/core/
 COPY packages/web/ packages/web/
 
 # Build core, then web (server + UI)
-RUN pnpm --filter @mise/core run build
-RUN pnpm --filter @mise/web run build
+RUN pnpm --filter @plainfare/core run build
+RUN pnpm --filter @plainfare/web run build
 
 # Production stage
 FROM node:22-slim
@@ -46,8 +46,8 @@ WORKDIR /app/packages/web
 
 VOLUME /data/recipes
 
-ENV MISE_RECIPES_DIR=/data/recipes
-ENV MISE_PORT=3141
+ENV PLAINFARE_RECIPES_DIR=/data/recipes
+ENV PLAINFARE_PORT=3141
 
 EXPOSE 3141
 

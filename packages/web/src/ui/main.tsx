@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { RecipeList } from "./pages/RecipeList.js";
 import { RecipeDetail } from "./pages/RecipeDetail.js";
 import { Ingest } from "./pages/Ingest.js";
+import styles from "./main.module.css";
 
 function App() {
   const [queryClient] = useState(() => new QueryClient());
@@ -21,21 +22,11 @@ function App() {
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <header style={{ marginBottom: "2rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h1 style={{ fontSize: "1.5rem", fontWeight: 600 }}>
-              <a href="/" style={{ color: "inherit" }}>mise</a>
+          <header className={styles.header}>
+            <h1 className={styles.logo}>
+              <a href="/">plainfare</a>
             </h1>
-            <Link
-              to="/ingest"
-              style={{
-                padding: "0.4rem 1rem",
-                background: "#2563eb",
-                color: "white",
-                borderRadius: 6,
-                textDecoration: "none",
-                fontSize: "0.85rem",
-              }}
-            >
+            <Link to="/ingest" className={styles.addButton}>
               + Add Recipe
             </Link>
           </header>

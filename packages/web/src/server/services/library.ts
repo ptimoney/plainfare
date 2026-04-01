@@ -1,8 +1,8 @@
 import { resolve } from "node:path";
 import { readdir, readFile, stat, writeFile } from "node:fs/promises";
 import { watch } from "chokidar";
-import { parseRecipe, serialiseRecipe } from "@mise/core";
-import type { Recipe, ConfidenceReport } from "@mise/core";
+import { parseRecipe, serialiseRecipe } from "@plainfare/core";
+import type { Recipe, ConfidenceReport } from "@plainfare/core";
 
 export interface RecipeEntry {
   filePath: string;

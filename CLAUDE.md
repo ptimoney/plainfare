@@ -1,4 +1,4 @@
-# mise — Project Context for Claude Code
+# plainfare — Project Context for Claude Code
 
 ## What This Project Is
 
@@ -17,13 +17,13 @@ intact and usable.
 
 ## Architecture Overview
 
-mise is a pnpm monorepo with three packages:
+plainfare is a pnpm monorepo with three packages:
 
-- **`@mise/core`** — Pure TypeScript library. Types, ingestion pipeline,
+- **`@plainfare/core`** — Pure TypeScript library. Types, ingestion pipeline,
   functions (serialise, scale). No runtime dependencies on Node-specific APIs
   like Playwright. All other packages depend on this.
-- **`@mise/cli`** — Thin CLI over core. Single `mise ingest` command.
-- **`@mise/web`** — Long-running web service. Hono server + tRPC API + React
+- **`@plainfare/cli`** — Thin CLI over core. Single `plainfare ingest` command.
+- **`@plainfare/web`** — Long-running web service. Hono server + tRPC API + React
   SPA. Owns Playwright, job queue, AI provider, and file-watching library.
 
 The service evolution path is: **homelab** → **self-hosted** → **SaaS**.
@@ -72,16 +72,16 @@ The service evolution path is: **homelab** → **self-hosted** → **SaaS**.
 │   │
 │   ├── cli/                       # Thin CLI wrapper
 │   │   └── src/
-│   │       ├── index.ts           # Entry point — `mise` command
+│   │       ├── index.ts           # Entry point — `plainfare` command
 │   │       └── commands/
-│   │           ├── ingest.ts      # mise ingest <file-or-url>
-│   │           └── scale.ts       # mise scale <file> <servings>
+│   │           ├── ingest.ts      # plainfare ingest <file-or-url>
+│   │           └── scale.ts       # plainfare scale <file> <servings>
 │   │
 │   └── web/                       # Long-running service
 │       ├── src/
 │       │   ├── server/
 │       │   │   ├── index.ts       # Hono app, tRPC mount, SPA serving, graceful shutdown
-│       │   │   ├── config.ts      # zod-validated env vars (MISE_RECIPES_DIR, MISE_AI_*, etc.)
+│       │   │   ├── config.ts      # zod-validated env vars (PLAINFARE_RECIPES_DIR, PLAINFARE_AI_*, etc.)
 │       │   │   ├── trpc.ts        # tRPC init + AppContext
 │       │   │   ├── router.ts      # Root router combining all routes
 │       │   │   ├── routes/
@@ -115,7 +115,7 @@ The service evolution path is: **homelab** → **self-hosted** → **SaaS**.
 
 ## The Canonical Recipe Format
 
-Every recipe file produced by mise follows this format. It is designed to be
+Every recipe file produced by plainfare follows this format. It is designed to be
 human-readable as a plain document — no YAML frontmatter, no machine cruft.
 
 ```markdown
@@ -214,7 +214,7 @@ Operations on an existing `Recipe` AST:
 ### RecipeLibrary
 
 In-memory `Map<string, RecipeEntry>` backed by the filesystem. On startup, scans
-`MISE_RECIPES_DIR` recursively for `.md` files and parses each. chokidar watches
+`PLAINFARE_RECIPES_DIR` recursively for `.md` files and parses each. chokidar watches
 for external changes (add/change/delete). Own writes are debounced to avoid
 redundant re-parsing.
 
@@ -232,14 +232,14 @@ Environment variables validated with zod:
 
 | Variable | Default | Description |
 |---|---|---|
-| `MISE_RECIPES_DIR` | `./recipes` | Path to recipe `.md` files |
-| `MISE_PORT` | `3141` | Server port |
-| `MISE_AI_ENDPOINT` | — | OpenAI-compatible API base URL |
-| `MISE_AI_API_KEY` | — | API key for AI provider |
-| `MISE_AI_MODEL` | `gpt-4o` | Model name for vision extraction |
-| `MISE_JOB_CONCURRENCY` | `2` | Max concurrent background jobs |
-| `MISE_BASE_URL` | — | Public-facing URL (used in Telegram replies, etc.) |
-| `MISE_TELEGRAM_BOT_TOKEN` | — | Telegram bot token (enables mobile ingestion) |
+| `PLAINFARE_RECIPES_DIR` | `./recipes` | Path to recipe `.md` files |
+| `PLAINFARE_PORT` | `3141` | Server port |
+| `PLAINFARE_AI_ENDPOINT` | — | OpenAI-compatible API base URL |
+| `PLAINFARE_AI_API_KEY` | — | API key for AI provider |
+| `PLAINFARE_AI_MODEL` | `gpt-4o` | Model name for vision extraction |
+| `PLAINFARE_JOB_CONCURRENCY` | `2` | Max concurrent background jobs |
+| `PLAINFARE_BASE_URL` | — | Public-facing URL (used in Telegram replies, etc.) |
+| `PLAINFARE_TELEGRAM_BOT_TOKEN` | — | Telegram bot token (enables mobile ingestion) |
 
 ### Docker Deployment
 
@@ -264,8 +264,8 @@ packages/core/test/fixtures/
 Run tests:
 
 ```bash
-pnpm --filter @mise/core test        # 132 tests
-pnpm --filter @mise/web test         # Job queue tests
+pnpm --filter @plainfare/core test        # 132 tests
+pnpm --filter @plainfare/web test         # Job queue tests
 ```
 
 ---
@@ -280,9 +280,9 @@ pnpm --filter @mise/web test         # Job queue tests
 3. **Files survive without the app.** Any `.md` file produced by this system
    must be fully readable and useful as a plain document.
 4. **No silent data loss.** If the parser can't resolve a field, it says so.
-5. **Core stays pure.** `@mise/core` has no side effects, no Playwright, no
+5. **Core stays pure.** `@plainfare/core` has no side effects, no Playwright, no
    network calls. Side-effectful concerns (browser, AI API calls, file watching)
-   live in `@mise/web`.
+   live in `@plainfare/web`.
 6. **Pluggable external services.** AI providers, transcription, headless
    browsers — all configurable, none bundled as hard dependencies in core.
 

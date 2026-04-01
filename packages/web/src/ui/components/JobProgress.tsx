@@ -1,5 +1,9 @@
 import { Link } from "react-router-dom";
 import { useJobPolling } from "../hooks/useJobPolling.js";
+import { Button } from "./Button.js";
+import { Alert } from "./Alert.js";
+import { ProgressBar } from "./ProgressBar.js";
+import styles from "./JobProgress.module.css";
 
 interface JobProgressProps {
   jobId: string | null;
@@ -17,26 +21,10 @@ export function JobProgress({ jobId, onReset }: JobProgressProps) {
   if (!jobId || !job) return null;
 
   if (isPolling) {
-    const status = job.status === "pending" ? "Queued..." : "Extracting recipe...";
+    const label = job.status === "pending" ? `Queued... ${job.progress}%` : `Extracting recipe... ${job.progress}%`;
     return (
-      <div style={{ marginTop: "1.5rem" }}>
-        <div style={{ marginBottom: "0.5rem", fontSize: "0.9rem", color: "#444" }}>
-          {status} {job.progress}%
-        </div>
-        <div style={{
-          height: 8,
-          borderRadius: 4,
-          background: "#e5e5e5",
-          overflow: "hidden",
-        }}>
-          <div style={{
-            height: "100%",
-            width: `${job.progress}%`,
-            background: "#2563eb",
-            borderRadius: 4,
-            transition: "width 0.3s ease",
-          }} />
-        </div>
+      <div className={styles.wrapper}>
+        <ProgressBar progress={job.progress} label={label} />
       </div>
     );
   }
@@ -44,82 +32,41 @@ export function JobProgress({ jobId, onReset }: JobProgressProps) {
   if (isComplete) {
     const output = job.output as IngestOutput;
     return (
-      <div style={{
-        marginTop: "1.5rem",
-        padding: "1.25rem",
-        background: "#f0fdf4",
-        border: "1px solid #bbf7d0",
-        borderRadius: 8,
-      }}>
-        <div style={{ fontWeight: 600, marginBottom: "0.5rem", color: "#166534" }}>
-          Recipe extracted successfully
-        </div>
-        <div style={{ marginBottom: "1rem", color: "#444" }}>
+      <div className={styles.wrapper}>
+        <Alert
+          variant="success"
+          title="Recipe extracted successfully"
+          actions={
+            <>
+              <Link to={`/recipes/${output.slug}`} className={styles.viewLink}>
+                <Button>View Recipe</Button>
+              </Link>
+              <Button variant="secondary" onClick={onReset}>
+                Add Another
+              </Button>
+            </>
+          }
+        >
           {output.recipe.title}
-        </div>
-        <div style={{ display: "flex", gap: "0.75rem" }}>
-          <Link
-            to={`/recipes/${output.slug}`}
-            style={{
-              display: "inline-block",
-              padding: "0.5rem 1.25rem",
-              background: "#2563eb",
-              color: "white",
-              borderRadius: 6,
-              textDecoration: "none",
-              fontSize: "0.9rem",
-            }}
-          >
-            View Recipe
-          </Link>
-          <button
-            onClick={onReset}
-            style={{
-              padding: "0.5rem 1.25rem",
-              background: "none",
-              border: "1px solid #e5e5e5",
-              borderRadius: 6,
-              cursor: "pointer",
-              fontSize: "0.9rem",
-              color: "#444",
-            }}
-          >
-            Add Another
-          </button>
-        </div>
+        </Alert>
       </div>
     );
   }
 
   if (isFailed) {
     return (
-      <div style={{
-        marginTop: "1.5rem",
-        padding: "1.25rem",
-        background: "#fef2f2",
-        border: "1px solid #fecaca",
-        borderRadius: 8,
-      }}>
-        <div style={{ fontWeight: 600, marginBottom: "0.5rem", color: "#991b1b" }}>
-          Extraction failed
-        </div>
-        <div style={{ marginBottom: "1rem", color: "#444", fontSize: "0.9rem" }}>
-          {job.error}
-        </div>
-        <button
-          onClick={onReset}
-          style={{
-            padding: "0.5rem 1.25rem",
-            background: "none",
-            border: "1px solid #e5e5e5",
-            borderRadius: 6,
-            cursor: "pointer",
-            fontSize: "0.9rem",
-            color: "#444",
-          }}
+      <div className={styles.wrapper}>
+        <Alert
+          variant="error"
+          title="Extraction failed"
+          actions={
+            <Button variant="secondary" onClick={onReset}>
+              Try Again
+            </Button>
+          }
         >
-          Try Again
-        </button>
+          {job.error}
+        </Alert>
       </div>
     );
   }

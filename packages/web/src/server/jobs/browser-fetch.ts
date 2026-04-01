@@ -1,5 +1,5 @@
-import { ingestFromUrl } from "@mise/core";
-import type { Recipe } from "@mise/core";
+import { ingestFromUrl } from "@plainfare/core";
+import type { Recipe } from "@plainfare/core";
 import type { JobHandler } from "./queue.js";
 import type { RecipeLibrary } from "../services/library.js";
 import { fetchWithBrowser } from "../services/browser.js";

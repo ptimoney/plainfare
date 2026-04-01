@@ -1,0 +1,30 @@
+.header {
+  margin-bottom: var(--space-3xl);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: var(--font-size-3xl);
+  font-weight: 600;
+}
+
+.logo a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.addButton {
+  padding: 0.4rem var(--space-lg);
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+}
+
+.addButton:hover {
+  background: var(--color-primary-hover);
+  text-decoration: none;
+}

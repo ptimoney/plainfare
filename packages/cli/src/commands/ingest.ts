@@ -6,8 +6,8 @@ import {
   ingestFromUrl,
   serialiseRecipe,
   scaleRecipe,
-} from "@mise/core";
-import type { ConfidenceLevel } from "@mise/core";
+} from "@plainfare/core";
+import type { ConfidenceLevel } from "@plainfare/core";
 
 export const ingestCommand = new Command("ingest")
   .description("Ingest a recipe from a file or URL, output canonical markdown")

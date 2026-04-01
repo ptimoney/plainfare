@@ -1,0 +1,7 @@
+.wrapper {
+  margin-top: var(--space-2xl);
+}
+
+.viewLink {
+  text-decoration: none;
+}

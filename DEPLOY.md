@@ -25,20 +25,20 @@ get started — only the defaults run out of the box, everything else is opt-in.
 
 | Variable | Default | Description |
 |---|---|---|
-| `MISE_PORT` | `3141` | Server port |
-| `MISE_BASE_URL` | — | Public URL (e.g. `https://mise.example.com`). Used in Telegram replies and anywhere the app needs to link back to itself. |
-| `MISE_RECIPES_DIR` | `./recipes` | Host path to recipe files (mapped to `/data/recipes` in container) |
-| `MISE_AI_ENDPOINT` | — | OpenAI-compatible API URL (e.g. `https://api.openai.com`, `http://ollama:11434`) |
-| `MISE_AI_API_KEY` | — | API key for the AI provider |
-| `MISE_AI_MODEL` | `gpt-4o` | Model name for AI extraction |
-| `MISE_TELEGRAM_BOT_TOKEN` | — | Telegram bot token for mobile ingestion |
-| `MISE_JOB_CONCURRENCY` | `2` | Max concurrent background jobs |
+| `PLAINFARE_PORT` | `3141` | Server port |
+| `PLAINFARE_BASE_URL` | — | Public URL (e.g. `https://mise.example.com`). Used in Telegram replies and anywhere the app needs to link back to itself. |
+| `PLAINFARE_RECIPES_DIR` | `./recipes` | Host path to recipe files (mapped to `/data/recipes` in container) |
+| `PLAINFARE_AI_ENDPOINT` | — | OpenAI-compatible API URL (e.g. `https://api.openai.com`, `http://ollama:11434`) |
+| `PLAINFARE_AI_API_KEY` | — | API key for the AI provider |
+| `PLAINFARE_AI_MODEL` | `gpt-4o` | Model name for AI extraction |
+| `PLAINFARE_TELEGRAM_BOT_TOKEN` | — | Telegram bot token for mobile ingestion |
+| `PLAINFARE_JOB_CONCURRENCY` | `2` | Max concurrent background jobs |
 
 ### Minimal (no AI, no Telegram)
 
 ```env
 # .env
-MISE_BASE_URL=https://mise.example.com
+PLAINFARE_BASE_URL=https://mise.example.com
 ```
 
 URL ingestion (JSON-LD / HTML parsing) works without AI. You can paste recipe
@@ -48,17 +48,17 @@ URLs in the web UI and they'll be extracted deterministically.
 
 ```env
 # .env — using OpenAI
-MISE_BASE_URL=https://mise.example.com
-MISE_AI_ENDPOINT=https://api.openai.com
-MISE_AI_API_KEY=sk-...
-MISE_AI_MODEL=gpt-4o
+PLAINFARE_BASE_URL=https://mise.example.com
+PLAINFARE_AI_ENDPOINT=https://api.openai.com
+PLAINFARE_AI_API_KEY=sk-...
+PLAINFARE_AI_MODEL=gpt-4o
 ```
 
 ```env
 # .env — using local Ollama
-MISE_BASE_URL=https://mise.example.com
-MISE_AI_ENDPOINT=http://host.docker.internal:11434
-MISE_AI_MODEL=gemma3:12b
+PLAINFARE_BASE_URL=https://mise.example.com
+PLAINFARE_AI_ENDPOINT=http://host.docker.internal:11434
+PLAINFARE_AI_MODEL=gemma3:12b
 ```
 
 Enables text and image extraction (paste text, upload photos, etc).
@@ -67,16 +67,16 @@ Enables text and image extraction (paste text, upload photos, etc).
 
 ```env
 # .env
-MISE_BASE_URL=https://mise.example.com
-MISE_TELEGRAM_BOT_TOKEN=123456:ABC-DEF...
-MISE_AI_ENDPOINT=https://api.openai.com
-MISE_AI_API_KEY=sk-...
+PLAINFARE_BASE_URL=https://mise.example.com
+PLAINFARE_TELEGRAM_BOT_TOKEN=123456:ABC-DEF...
+PLAINFARE_AI_ENDPOINT=https://api.openai.com
+PLAINFARE_AI_API_KEY=sk-...
 ```
 
 To create a bot:
 1. Open Telegram, message [@BotFather](https://t.me/BotFather)
 2. Send `/newbot`, pick a name and username
-3. Copy the token into `MISE_TELEGRAM_BOT_TOKEN`
+3. Copy the token into `PLAINFARE_TELEGRAM_BOT_TOKEN`
 
 Then share URLs, text, or photos with your bot from any device.
 
@@ -181,15 +181,15 @@ pnpm install
 
 # Build
 pnpm build
-pnpm --filter @mise/web run build
+pnpm --filter @plainfare/web run build
 
 # Set environment
-export MISE_RECIPES_DIR=/path/to/recipes
-export MISE_PORT=3141
+export PLAINFARE_RECIPES_DIR=/path/to/recipes
+export PLAINFARE_PORT=3141
 # ... other env vars as needed
 
 # Start
-pnpm --filter @mise/web start
+pnpm --filter @plainfare/web start
 ```
 
 ---

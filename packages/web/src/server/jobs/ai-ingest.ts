@@ -1,5 +1,5 @@
-import { parseAiRecipeResponse } from "@mise/core";
-import type { AiProvider, Recipe } from "@mise/core";
+import { parseAiRecipeResponse } from "@plainfare/core";
+import type { AiProvider, Recipe } from "@plainfare/core";
 import type { JobHandler } from "./queue.js";
 import type { RecipeLibrary } from "../services/library.js";
 

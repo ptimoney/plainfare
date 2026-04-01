@@ -13,9 +13,9 @@ interface IngestOutput {
 }
 
 export function createTelegramBot(config: Config, jobQueue: JobQueue) {
-  const bot = new Bot(config.MISE_TELEGRAM_BOT_TOKEN!);
+  const bot = new Bot(config.PLAINFARE_TELEGRAM_BOT_TOKEN!);
   const pendingReplies = new Map<string, PendingReply>();
-  const baseUrl = config.MISE_BASE_URL ?? `http://localhost:${config.MISE_PORT}`;
+  const baseUrl = config.PLAINFARE_BASE_URL ?? `http://localhost:${config.PLAINFARE_PORT}`;
 
   // --- Message handlers ---
 
@@ -33,7 +33,7 @@ export function createTelegramBot(config: Config, jobQueue: JobQueue) {
     try {
       const photo = ctx.message.photo[ctx.message.photo.length - 1];
       const file = await ctx.api.getFile(photo.file_id);
-      const fileUrl = `https://api.telegram.org/file/bot${config.MISE_TELEGRAM_BOT_TOKEN}/${file.file_path}`;
+      const fileUrl = `https://api.telegram.org/file/bot${config.PLAINFARE_TELEGRAM_BOT_TOKEN}/${file.file_path}`;
 
       const response = await fetch(fileUrl);
       if (!response.ok) {

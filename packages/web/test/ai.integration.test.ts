@@ -1,16 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { OpenAiCompatibleProvider } from "../src/server/services/ai.js";
-import { parseAiRecipeResponse, serialiseRecipe } from "@mise/core";
+import { parseAiRecipeResponse, serialiseRecipe } from "@plainfare/core";
 
-const OLLAMA_ENDPOINT = process.env.MISE_TEST_OLLAMA_ENDPOINT;
-const OLLAMA_MODEL = process.env.MISE_TEST_OLLAMA_MODEL || "gemma3:12b";
+const OLLAMA_ENDPOINT = process.env.PLAINFARE_TEST_OLLAMA_ENDPOINT;
+const OLLAMA_MODEL = process.env.PLAINFARE_TEST_OLLAMA_MODEL || "gemma3:12b";
 
 describe.skipIf(!OLLAMA_ENDPOINT)("AI integration (Ollama)", () => {
   const provider = OLLAMA_ENDPOINT
     ? new OpenAiCompatibleProvider({
-        MISE_AI_ENDPOINT: OLLAMA_ENDPOINT,
-        MISE_AI_API_KEY: "",
-        MISE_AI_MODEL: OLLAMA_MODEL,
+        PLAINFARE_AI_ENDPOINT: OLLAMA_ENDPOINT,
+        PLAINFARE_AI_API_KEY: "",
+        PLAINFARE_AI_MODEL: OLLAMA_MODEL,
       })
     : (null as never);
 

@@ -11,25 +11,25 @@ const CLI = join(import.meta.dirname, "../src/index.ts");
 const FIXTURE_DIR = join(import.meta.dirname, "../../core/test/fixtures/input");
 
 /** Run the CLI via tsx so we don't need to build first */
-function mise(...args: string[]) {
+function plainfare(...args: string[]) {
   return exec("npx", ["tsx", CLI, ...args], { timeout: 10_000 });
 }
 
-describe("mise ingest", () => {
+describe("plainfare ingest", () => {
   it("ingests a canonical markdown file and outputs canonical markdown", async () => {
-    const { stdout } = await mise("ingest", join(FIXTURE_DIR, "carbonara.md"));
+    const { stdout } = await plainfare("ingest", join(FIXTURE_DIR, "carbonara.md"));
     expect(stdout).toContain("# Spaghetti Carbonara");
     expect(stdout).toContain("## Ingredients");
     expect(stdout).toContain("## Method");
   });
 
   it("ingests a minimal file (title only)", async () => {
-    const { stdout } = await mise("ingest", join(FIXTURE_DIR, "title-only.md"));
+    const { stdout } = await plainfare("ingest", join(FIXTURE_DIR, "title-only.md"));
     expect(stdout).toContain("# ");
   });
 
   it("outputs JSON with --json flag", async () => {
-    const { stdout } = await mise("ingest", "--json", join(FIXTURE_DIR, "carbonara.md"));
+    const { stdout } = await plainfare("ingest", "--json", join(FIXTURE_DIR, "carbonara.md"));
     const parsed = JSON.parse(stdout);
     expect(parsed.recipe.title).toBe("Spaghetti Carbonara");
     expect(parsed.confidence.overallConfidence).toBeGreaterThan(0);
@@ -37,11 +37,11 @@ describe("mise ingest", () => {
 
   it("writes to a file with -o flag", async () => {
     let tmpDir: string;
-    tmpDir = await mkdtemp(join(tmpdir(), "mise-test-"));
+    tmpDir = await mkdtemp(join(tmpdir(), "plainfare-test-"));
     const outPath = join(tmpDir, "output.md");
 
     try {
-      const { stderr } = await mise("ingest", "-o", outPath, join(FIXTURE_DIR, "carbonara.md"));
+      const { stderr } = await plainfare("ingest", "-o", outPath, join(FIXTURE_DIR, "carbonara.md"));
       expect(stderr).toContain(`Written to ${outPath}`);
 
       const { readFile: rf } = await import("node:fs/promises");
@@ -53,20 +53,20 @@ describe("mise ingest", () => {
   });
 
   it("scales a recipe with --scale flag", async () => {
-    const { stdout } = await mise("ingest", "--scale", "8", join(FIXTURE_DIR, "carbonara.md"));
+    const { stdout } = await plainfare("ingest", "--scale", "8", join(FIXTURE_DIR, "carbonara.md"));
     // Carbonara serves 4, scaling to 8 should double quantities
     // 200g spaghetti → 400g
     expect(stdout).toContain("400g");
   });
 
   it("reports confidence to stderr", async () => {
-    const { stderr } = await mise("ingest", join(FIXTURE_DIR, "carbonara.md"));
+    const { stderr } = await plainfare("ingest", join(FIXTURE_DIR, "carbonara.md"));
     expect(stderr).toContain("Confidence Report");
     expect(stderr).toContain("Overall:");
     expect(stderr).toContain("Resolved:");
   });
 
   it("fails gracefully on non-existent file", async () => {
-    await expect(mise("ingest", "/tmp/does-not-exist.md")).rejects.toThrow();
+    await expect(plainfare("ingest", "/tmp/does-not-exist.md")).rejects.toThrow();
   });
 });

@@ -1,0 +1,10 @@
+.backLink {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+}
+
+.title {
+  font-size: var(--font-size-4xl);
+  font-weight: 700;
+  margin: var(--space-lg) 0;
+}

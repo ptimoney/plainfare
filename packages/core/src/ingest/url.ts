@@ -97,7 +97,7 @@ async function fetchHtml(
   const fetchFn = options.fetch || globalThis.fetch;
   const userAgent =
     options.userAgent ||
-    "Mozilla/5.0 (compatible; MiseRecipeBot/0.1; +https://github.com/ptimoney/mise)";
+    "Mozilla/5.0 (compatible; PlainFareBot/0.1; +https://github.com/ptimoney/plainfare)";
 
   // If browser mode is explicitly requested, skip plain fetch
   if (options.useBrowser) {
