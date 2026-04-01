@@ -4,3 +4,4 @@ dist/
 .DS_Store
 test/fixtures/actual/
 COMPETITIVE_LANDSCAPE.md
+.env
