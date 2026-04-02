@@ -11,6 +11,12 @@
   gap: var(--space-sm);
 }
 
+.hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-lg);
+}
+
 .error {
   margin-top: var(--space-md);
   color: var(--color-error-text);

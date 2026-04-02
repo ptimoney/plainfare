@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseAiRecipeResponse, buildImageExtractionPrompt, buildTextExtractionPrompt } from "../src/ingest/ai.js";
+import { parseAiRecipeResponse, buildImageExtractionPrompt, buildTextExtractionPrompt, buildNutritionEstimationPrompt, parseNutritionResponse } from "../src/ingest/ai.js";
 
 describe("buildImageExtractionPrompt", () => {
   it("returns a non-empty prompt string", () => {
@@ -166,5 +166,59 @@ describe("parseAiRecipeResponse", () => {
     const result = parseAiRecipeResponse(response);
     expect(result.recipe.title).toBe("Untitled Recipe");
     expect(result.confidence.fields.title).toBe("inferred"); // "Untitled Recipe" is truthy
+  });
+});
+
+describe("buildNutritionEstimationPrompt", () => {
+  it("returns a prompt mentioning nutrition fields", () => {
+    const prompt = buildNutritionEstimationPrompt();
+    expect(prompt).toContain("calories");
+    expect(prompt).toContain("protein");
+    expect(prompt).toContain("carbs");
+    expect(prompt).toContain("fat");
+    expect(prompt).toContain("fibre");
+    expect(prompt).toContain("JSON");
+  });
+});
+
+describe("parseNutritionResponse", () => {
+  it("parses valid JSON with all fields", () => {
+    const response = JSON.stringify({
+      calories: 520,
+      protein: 22,
+      carbs: 61,
+      fat: 18,
+      fibre: 2.4,
+    });
+    const result = parseNutritionResponse(response);
+    expect(result).toEqual({ calories: 520, protein: 22, carbs: 61, fat: 18, fibre: 2 });
+  });
+
+  it("parses code-fenced JSON", () => {
+    const response = '```json\n{"calories": 350, "protein": 12, "carbs": 40, "fat": 15, "fibre": 3}\n```';
+    const result = parseNutritionResponse(response);
+    expect(result).toEqual({ calories: 350, protein: 12, carbs: 40, fat: 15, fibre: 3 });
+  });
+
+  it("handles partial fields", () => {
+    const response = JSON.stringify({ calories: 200, protein: 10 });
+    const result = parseNutritionResponse(response);
+    expect(result).toEqual({ calories: 200, protein: 10 });
+  });
+
+  it("returns null for empty object", () => {
+    const result = parseNutritionResponse("{}");
+    expect(result).toBeNull();
+  });
+
+  it("returns null for invalid JSON", () => {
+    const result = parseNutritionResponse("not json");
+    expect(result).toBeNull();
+  });
+
+  it("rounds values to nearest whole number", () => {
+    const response = JSON.stringify({ calories: 521.7, protein: 22.3 });
+    const result = parseNutritionResponse(response);
+    expect(result).toEqual({ calories: 522, protein: 22 });
   });
 });

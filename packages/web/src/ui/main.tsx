@@ -8,6 +8,8 @@ import { Link } from "react-router-dom";
 import { RecipeList } from "./pages/RecipeList.js";
 import { RecipeDetail } from "./pages/RecipeDetail.js";
 import { Ingest } from "./pages/Ingest.js";
+import { ShoppingList } from "./pages/ShoppingList.js";
+import { Duplicates } from "./pages/Duplicates.js";
 import styles from "./main.module.css";
 
 function App() {
@@ -26,13 +28,17 @@ function App() {
             <h1 className={styles.logo}>
               <a href="/">plainfare</a>
             </h1>
-            <Link to="/ingest" className={styles.addButton}>
-              + Add Recipe
-            </Link>
+            <nav className={styles.nav}>
+              <Link to="/shopping" className={styles.navLink}>Shopping List</Link>
+              <Link to="/duplicates" className={styles.navLink}>Duplicates</Link>
+              <Link to="/ingest" className={styles.addButton}>+ Add Recipe</Link>
+            </nav>
           </header>
           <Routes>
             <Route path="/" element={<RecipeList />} />
             <Route path="/ingest" element={<Ingest />} />
+            <Route path="/shopping" element={<ShoppingList />} />
+            <Route path="/duplicates" element={<Duplicates />} />
             <Route path="/recipes/:slug" element={<RecipeDetail />} />
           </Routes>
         </BrowserRouter>

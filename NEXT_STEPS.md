@@ -5,110 +5,55 @@ Grouped into tiers by impact and dependency order.
 
 ---
 
-## Tier 1 — Quick wins and polish
+## Tier 1 — Quick wins and polish ✓
 
-Small improvements that make the existing feature set more robust.
-
-### Slug collision handling
-`RecipeLibrary.add()` silently overwrites if two recipes slugify to the same
-name. Add a numeric suffix (`-2`, `-3`) when a slug already exists. Affects
-`services/library.ts`.
-
-### Image upload size limit
-No validation on base64 image size in the ingest route. Add a zod
-`.max()` on the image field and a matching check in the `ImageIngestForm`
-component to fail fast with a clear message.
-
-### Recipe scaling in the web UI
-`scaleRecipe()` exists in core and works from the CLI, but the web UI has no
-way to trigger it. Add a servings input on `RecipeDetail` that calls a new
-`recipes.scale` tRPC mutation (or a client-side call to the pure function).
-
-### CLI `scale` command
-The project structure in CLAUDE.md lists `commands/scale.ts` but it isn't
-implemented. Wire up the existing `scaleRecipe()` function as
-`plainfare scale <file> <servings>`.
+- ~~Slug collision handling~~ — numeric suffix (`-2`, `-3`) on duplicates
+- ~~Image upload size limit~~ — 10MB zod validation server-side, client already had it
+- ~~Recipe scaling in the web UI~~ — client-side scaling via +/- servings adjuster
+  and 1x–5x multiplier for recipes without serves
+- ~~Recipe image display~~ — hero image on detail page, thumbnail on cards
+- ~~CLI `scale` command~~ — removed; scaling is view-only to avoid persisting
+  incomplete scaling (method text amounts aren't scaled)
 
 ---
 
-## Tier 2 — UI editing and recipe lifecycle
+## Tier 2 — UI editing and recipe lifecycle ✓
 
-The web UI is currently read-only. These features close the loop so users can
-manage recipes without leaving the browser.
-
-### Recipe editing
-Add an edit mode to `RecipeDetail` — a markdown textarea that saves back to
-disk via a new `recipes.update` tRPC mutation. Keep it simple: edit the raw
-markdown, re-parse on save, write the file. No rich editor needed initially.
-
-### Recipe deletion
-Add a `recipes.delete` mutation that removes the `.md` file and the in-memory
-index entry. Confirm in the UI before deleting.
-
-### Tag management / filtering in the UI
-The API already supports `tags` filtering. Expose it in the UI: clickable tag
-pills on recipe cards that filter the list, plus a tag sidebar or filter bar.
+- ~~Recipe editing~~ — markdown textarea edit mode on detail page
+- ~~Recipe deletion~~ — with two-step confirmation, navigates home after
+- ~~Tag filtering~~ — clickable tag pills in filter bar and on cards, counts
+  shown, sorted by popularity, card tags truncated to 3 with +N overflow
 
 ---
 
-## Tier 3 — Ingestion expansion
+## Tier 3 — Ingestion expansion ✓
 
-New sources that bring recipes into plainfare from more places.
-
-### Batch URL ingestion
-Accept a list of URLs (newline-separated textarea or file upload) and enqueue
-one job per URL. Show aggregate progress. Useful for migrating a bookmarks
-folder.
-
-### RecipeMD and Cooklang ingestion
-The markdown parser already handles wild formats well. Add explicit support for:
-- **RecipeMD** conventions (italic amounts, bold yields, `---` separators,
-  italic tags) — mostly parser tolerance work
-- **Cooklang `.cook` files** — dedicated parser for inline ingredient syntax
-  (`@flour{200%g}`) and YAML metadata headers
-
-Both produce a standard `Recipe` AST and serialise to plainfare's canonical
-format.
-
-### Paprika / CopyMeThat import
-These export as `.paprikarecipes` (gzipped SQLite) or HTML. Parse the export
-format, extract recipes, run through the standard pipeline. Covers the most
-common migration path for users switching from other apps.
-
-### Video ingestion
-YouTube / TikTok / Instagram Reels. Pipeline:
-1. `yt-dlp` to download or extract audio
-2. Whisper (or similar) transcription
-3. LLM extraction from transcript → Recipe AST
-
-Heaviest lift in the list. Worth prototyping the transcript → LLM → Recipe
-path first using a pasted transcript before wiring up yt-dlp.
+- ~~Batch URL ingestion~~ — "Batch URLs" tab, one URL per line, per-job
+  progress rows with hostname, progress bar, done/failed status
+- ~~RecipeMD support~~ — italic tags, bold yields, `---` section separators
+- ~~Cooklang `.cook` files~~ — dedicated parser, CLI auto-detects `.cook` extension
+- ~~Paprika / CopyMeThat import~~ — Paprika `.paprikarecipes` (zip of gzipped
+  JSON) and CopyMeThat `.zip` (HTML) parsers in core, "Import" tab in ingest
+  UI, CLI auto-detects archive extensions
+- ~~Video ingestion (Phase A)~~ — yt-dlp subtitle extraction + LLM recipe
+  extraction. "From Video" tab in ingest UI (gated on AI + yt-dlp). Docker
+  images include yt-dlp. Phase B (audio transcription) deferred.
 
 ---
 
-## Tier 4 — Recipe intelligence
+## Tier 4 — Recipe intelligence ✓
 
-Operations on the recipe collection that go beyond storage.
-
-### Unit conversion (metric ↔ imperial)
-A `convertUnits()` function in core that rewrites ingredient quantities.
-Expose as a toggle in the UI and a CLI flag. Needs a unit mapping table and
-sensible rounding rules (don't say "236.588ml" for "1 cup").
-
-### Shopping list generation
-Aggregate ingredients across selected recipes, merge duplicates (sum
-quantities for the same ingredient+unit), output as markdown checklist.
-Natural fit for the CLI (`plainfare shop recipe1.md recipe2.md`) and a UI
-page.
-
-### Recipe deduplication
-Detect near-duplicate recipes by title similarity and ingredient overlap.
-Surface candidates in the UI for manual merge. Useful after bulk imports.
-
-### Nutrition estimation
-When nutrition data is missing, estimate from ingredients using a food
-composition database (USDA FoodData Central API or a local SQLite copy).
-Mark estimated values as `inferred` in the confidence report.
+- ~~Unit conversion~~ — `convertUnits()` in core with metric/imperial
+  conversion tables, sensible rounding (nearest quarter for small values,
+  nearest 5 for large). Original/Metric/Imperial toggle on ingredient section.
+- ~~Shopping list~~ — `generateShoppingList()` merges ingredients across
+  selected recipes by name+unit, sums quantities. UI page at `/shopping` with
+  recipe checkboxes, clickable checklist, copy-to-clipboard. Header nav link.
+- ~~Recipe deduplication~~ — Levenshtein title similarity + Jaccard ingredient
+  overlap. `/duplicates` page shows candidates with "Keep Left/Right" actions.
+- ~~Nutrition estimation~~ — LLM-based estimation from ingredients via existing
+  AI provider. "Estimate nutrition" button on recipe detail page when AI is
+  configured and no nutrition data exists. Results saved to the recipe file.
 
 ---
 

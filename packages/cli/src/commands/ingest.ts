@@ -3,14 +3,17 @@ import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import {
   parseRecipe,
+  parseCooklang,
+  parsePaprikaArchive,
+  parseCopyMeThatArchive,
   ingestFromUrl,
   serialiseRecipe,
 } from "@plainfare/core";
-import type { ConfidenceLevel } from "@plainfare/core";
+import type { ConfidenceLevel, ParseResult } from "@plainfare/core";
 
 export const ingestCommand = new Command("ingest")
   .description("Ingest a recipe from a file or URL, output canonical markdown")
-  .argument("<source>", "Path to a .md file or a URL")
+  .argument("<source>", "Path to a .md, .cook, .paprikarecipes, or .zip file, or a URL")
   .option("--json", "Output parsed recipe as JSON instead of canonical markdown")
   .option("-o, --output <file>", "Write to file instead of stdout")
   .action(async (source: string, opts: {
@@ -25,8 +28,37 @@ export const ingestCommand = new Command("ingest")
       result = await ingestFromUrl(source);
     } else {
       const filePath = resolve(source);
-      const markdown = await readFile(filePath, "utf-8");
-      result = parseRecipe(markdown);
+      const lowerPath = filePath.toLowerCase();
+
+      // Archive formats — produce multiple recipes
+      if (lowerPath.endsWith(".paprikarecipes") || lowerPath.endsWith(".zip")) {
+        const buffer = await readFile(filePath);
+        const data = new Uint8Array(buffer);
+        const results: ParseResult[] = lowerPath.endsWith(".paprikarecipes")
+          ? parsePaprikaArchive(data)
+          : parseCopyMeThatArchive(data);
+
+        if (results.length === 0) {
+          console.error("No recipes found in archive.");
+          process.exit(1);
+        }
+
+        for (const r of results) {
+          if (opts.json) {
+            console.log(JSON.stringify(r, null, 2));
+          } else {
+            console.log(serialiseRecipe(r.recipe));
+            console.log("---\n");
+          }
+        }
+        console.error(`Imported ${results.length} recipe(s) from ${source}`);
+        return;
+      }
+
+      const content = await readFile(filePath, "utf-8");
+      result = filePath.endsWith(".cook")
+        ? parseCooklang(content)
+        : parseRecipe(content);
     }
 
     const { recipe } = result;

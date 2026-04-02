@@ -17,16 +17,22 @@ export function RecipeList() {
 
   const { data, isLoading, error } = trpc.recipes.list.useQuery(query);
 
-  // Fetch all recipes (unfiltered) to build the complete tag list
+  // Fetch all recipes (unfiltered) to build the complete tag list with counts
   const { data: allRecipes } = trpc.recipes.list.useQuery(undefined);
-  const allTags = useMemo(() => {
-    if (!allRecipes) return [];
-    const tagSet = new Set<string>();
+  const tagCounts = useMemo(() => {
+    if (!allRecipes) return new Map<string, number>();
+    const counts = new Map<string, number>();
     for (const entry of allRecipes) {
-      entry.recipe.tags?.forEach((t) => tagSet.add(t));
+      entry.recipe.tags?.forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1));
     }
-    return Array.from(tagSet).sort((a, b) => a.localeCompare(b));
+    return counts;
   }, [allRecipes]);
+
+  const allTags = useMemo(() => {
+    return Array.from(tagCounts.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([tag]) => tag);
+  }, [tagCounts]);
 
   function toggleTag(tag: string) {
     setSelectedTags((prev) =>
@@ -47,12 +53,14 @@ export function RecipeList() {
 
       {allTags.length > 0 && (
         <div className={styles.tagFilter}>
-          {allTags.map((tag) => (
-            <Tag key={tag} active={selectedTags.includes(tag)} onClick={() => toggleTag(tag)}>
-              {tag}
-            </Tag>
-
-          ))}
+          {allTags.map((tag) => {
+            const count = tagCounts.get(tag) ?? 0;
+            return (
+              <Tag key={tag} active={selectedTags.includes(tag)} onClick={() => toggleTag(tag)}>
+                {tag}{count > 1 && ` (${count})`}
+              </Tag>
+            );
+          })}
         </div>
       )}
 
@@ -62,6 +70,9 @@ export function RecipeList() {
       <div className={styles.grid}>
         {data?.map((entry) => (
           <Card key={entry.slug} to={`/recipes/${entry.slug}`}>
+            {entry.recipe.image && (
+              <img className={styles.cardImage} src={entry.recipe.image} alt={entry.recipe.title} loading="lazy" />
+            )}
             <h2 className={styles.cardTitle}>{entry.recipe.title}</h2>
             {entry.recipe.description && (
               <p className={styles.cardDescription}>
@@ -72,15 +83,22 @@ export function RecipeList() {
             )}
             {entry.recipe.tags && entry.recipe.tags.length > 0 && (
               <div className={styles.tags}>
-                {entry.recipe.tags.map((tag) => (
-                  <Tag
-                    key={tag}
-                    active={selectedTags.includes(tag)}
-                    onClick={(e) => { e.preventDefault(); toggleTag(tag); }}
-                  >
-                    {tag}
-                  </Tag>
-                ))}
+                {entry.recipe.tags
+                  .slice()
+                  .sort((a, b) => (tagCounts.get(b) ?? 0) - (tagCounts.get(a) ?? 0))
+                  .slice(0, 3)
+                  .map((tag) => (
+                    <Tag
+                      key={tag}
+                      active={selectedTags.includes(tag)}
+                      onClick={(e) => { e.preventDefault(); toggleTag(tag); }}
+                    >
+                      {tag}
+                    </Tag>
+                  ))}
+                {entry.recipe.tags.length > 3 && (
+                  <span className={styles.moreTag}>+{entry.recipe.tags.length - 3}</span>
+                )}
               </div>
             )}
           </Card>

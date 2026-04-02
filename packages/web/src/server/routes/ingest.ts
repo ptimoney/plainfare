@@ -39,5 +39,28 @@ export function createIngestRouter(jobQueue: JobQueue) {
         const jobId = jobQueue.enqueue("url-ingest", input);
         return { jobId };
       }),
+
+    fromImport: publicProcedure
+      .input(
+        z.object({
+          data: z.string().max(50_000_000, "Import file must be under 50MB"),
+          filename: z.string(),
+        }),
+      )
+      .mutation(({ input }) => {
+        const jobId = jobQueue.enqueue("import-ingest", input);
+        return { jobId };
+      }),
+
+    fromVideo: publicProcedure
+      .input(
+        z.object({
+          url: z.string().url(),
+        }),
+      )
+      .mutation(({ input }) => {
+        const jobId = jobQueue.enqueue("video-ingest", input);
+        return { jobId };
+      }),
   });
 }

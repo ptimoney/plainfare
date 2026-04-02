@@ -1,4 +1,4 @@
-import type { ParseResult, Recipe, ConfidenceLevel } from "../types.js";
+import type { ParseResult, Recipe, Nutrition, ConfidenceLevel } from "../types.js";
 import { buildConfidenceReport } from "./confidence.js";
 
 /**
@@ -13,6 +13,8 @@ export interface AiProvider {
   extractRecipeFromImage(image: Uint8Array, mimeType: string): Promise<string>;
   /** Send plain text (pasted recipe, transcript, etc.) to an LLM and get back raw JSON text */
   extractRecipeFromText(text: string): Promise<string>;
+  /** Send an ingredient list and get back estimated nutrition JSON text */
+  estimateNutrition(ingredientText: string): Promise<string>;
 }
 
 /** Shared JSON schema for all extraction prompts — keeps Recipe type and prompt in sync */
@@ -188,4 +190,53 @@ export function parseAiRecipeResponse(response: string): ParseResult {
     recipe,
     confidence: buildConfidenceReport(fields, true),
   };
+}
+
+/**
+ * Build the system prompt for nutrition estimation from an ingredient list.
+ */
+export function buildNutritionEstimationPrompt(): string {
+  return `You are a nutrition estimation assistant. Given a list of recipe ingredients, estimate the total nutritional information for the entire recipe.
+
+Return ONLY valid JSON with no markdown formatting, no code fences, no explanation. The JSON must conform to this schema:
+
+{
+  "calories": number (total kcal for the whole recipe),
+  "protein": number (grams),
+  "carbs": number (grams),
+  "fat": number (grams),
+  "fibre": number (grams)
+}
+
+Rules:
+- Estimate based on standard nutritional databases (e.g. USDA)
+- If a quantity is missing (e.g. "salt to taste"), use a typical amount
+- Round values to the nearest whole number
+- Return the total for the entire recipe, not per serving`;
+}
+
+/**
+ * Parse a raw AI JSON response into a Nutrition object.
+ * Returns null if the response cannot be parsed.
+ */
+export function parseNutritionResponse(response: string): Nutrition | null {
+  let cleaned = response.trim();
+  if (cleaned.startsWith("```")) {
+    cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, "").replace(/\n?```\s*$/, "");
+  }
+
+  try {
+    const raw = JSON.parse(cleaned);
+    const nutrition: Nutrition = {};
+    if (raw.calories != null) nutrition.calories = Math.round(Number(raw.calories));
+    if (raw.protein != null) nutrition.protein = Math.round(Number(raw.protein));
+    if (raw.carbs != null) nutrition.carbs = Math.round(Number(raw.carbs));
+    if (raw.fat != null) nutrition.fat = Math.round(Number(raw.fat));
+    if (raw.fibre != null) nutrition.fibre = Math.round(Number(raw.fibre));
+    // Return null if no fields were populated
+    if (Object.keys(nutrition).length === 0) return null;
+    return nutrition;
+  } catch {
+    return null;
+  }
 }

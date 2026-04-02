@@ -33,6 +33,10 @@ export class JobQueue extends EventEmitter {
     this.handlers.set(handler.type, handler);
   }
 
+  hasHandler(type: string): boolean {
+    return this.handlers.has(type);
+  }
+
   enqueue<TInput>(type: string, input: TInput): string {
     if (!this.handlers.has(type)) {
       throw new Error(`No handler registered for job type: ${type}`);

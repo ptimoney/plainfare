@@ -1,10 +1,10 @@
-# Deploying mise
+# Deploying plainfare
 
 ## Quick start (Docker Compose)
 
 ```bash
 # 1. Clone and configure
-git clone <repo-url> mise && cd mise
+git clone <repo-url> plainfare && cd plainfare
 cp .env.example .env
 # Edit .env with your settings (see Configuration below)
 
@@ -26,7 +26,7 @@ get started — only the defaults run out of the box, everything else is opt-in.
 | Variable | Default | Description |
 |---|---|---|
 | `PLAINFARE_PORT` | `3141` | Server port |
-| `PLAINFARE_BASE_URL` | — | Public URL (e.g. `https://mise.example.com`). Used in Telegram replies and anywhere the app needs to link back to itself. |
+| `PLAINFARE_BASE_URL` | — | Public URL (e.g. `https://plainfare.example.com`). Used in Telegram replies and anywhere the app needs to link back to itself. |
 | `PLAINFARE_RECIPES_DIR` | `./recipes` | Host path to recipe files (mapped to `/data/recipes` in container) |
 | `PLAINFARE_AI_ENDPOINT` | — | OpenAI-compatible API URL (e.g. `https://api.openai.com`, `http://ollama:11434`) |
 | `PLAINFARE_AI_API_KEY` | — | API key for the AI provider |
@@ -38,7 +38,7 @@ get started — only the defaults run out of the box, everything else is opt-in.
 
 ```env
 # .env
-PLAINFARE_BASE_URL=https://mise.example.com
+PLAINFARE_BASE_URL=https://plainfare.example.com
 ```
 
 URL ingestion (JSON-LD / HTML parsing) works without AI. You can paste recipe
@@ -48,7 +48,7 @@ URLs in the web UI and they'll be extracted deterministically.
 
 ```env
 # .env — using OpenAI
-PLAINFARE_BASE_URL=https://mise.example.com
+PLAINFARE_BASE_URL=https://plainfare.example.com
 PLAINFARE_AI_ENDPOINT=https://api.openai.com
 PLAINFARE_AI_API_KEY=sk-...
 PLAINFARE_AI_MODEL=gpt-4o
@@ -56,18 +56,20 @@ PLAINFARE_AI_MODEL=gpt-4o
 
 ```env
 # .env — using local Ollama
-PLAINFARE_BASE_URL=https://mise.example.com
+PLAINFARE_BASE_URL=https://plainfare.example.com
 PLAINFARE_AI_ENDPOINT=http://host.docker.internal:11434
 PLAINFARE_AI_MODEL=gemma3:12b
 ```
 
-Enables text and image extraction (paste text, upload photos, etc).
+Enables text and image extraction (paste text, upload photos, etc), nutrition
+estimation, and video ingestion (if yt-dlp is available in the Docker image —
+included by default).
 
 ### With Telegram bot
 
 ```env
 # .env
-PLAINFARE_BASE_URL=https://mise.example.com
+PLAINFARE_BASE_URL=https://plainfare.example.com
 PLAINFARE_TELEGRAM_BOT_TOKEN=123456:ABC-DEF...
 PLAINFARE_AI_ENDPOINT=https://api.openai.com
 PLAINFARE_AI_API_KEY=sk-...
@@ -78,13 +80,15 @@ To create a bot:
 2. Send `/newbot`, pick a name and username
 3. Copy the token into `PLAINFARE_TELEGRAM_BOT_TOKEN`
 
-Then share URLs, text, or photos with your bot from any device.
+Then share URLs, text, or photos with your bot from any device. YouTube links
+are automatically routed through subtitle extraction when yt-dlp and AI are
+configured.
 
 ---
 
 ## Reverse proxy
 
-mise should sit behind a reverse proxy (Nginx, Caddy, Traefik, etc.) for TLS
+plainfare should sit behind a reverse proxy (Nginx, Caddy, Traefik, etc.) for TLS
 and public access.
 
 ### Nginx / Nginx Proxy Manager
@@ -113,7 +117,7 @@ local Ollama).
 ### Caddy
 
 ```
-mise.example.com {
+plainfare.example.com {
     reverse_proxy localhost:3141
 }
 ```
@@ -125,7 +129,7 @@ Caddy handles TLS automatically.
 ## Browser-based URL fetching (optional)
 
 The default image does **not** include Chromium. Most recipe sites serve
-JSON-LD metadata that mise extracts without a browser.
+JSON-LD metadata that plainfare extracts without a browser.
 
 If you need browser rendering for JavaScript-heavy sites, use the Chromium
 variant:
@@ -133,7 +137,7 @@ variant:
 ```yaml
 # docker-compose.yml
 services:
-  mise:
+  plainfare:
     build:
       context: .
       dockerfile: packages/web/Dockerfile.chromium
@@ -198,7 +202,7 @@ pnpm --filter @plainfare/web start
 
 ```bash
 curl http://localhost:3141/api/health
-# {"status":"ok","recipes":12,"ai":true}
+# {"status":"ok","recipes":12,"ai":true,"ytdlp":true}
 ```
 
 The Docker image includes a built-in health check that hits this endpoint every

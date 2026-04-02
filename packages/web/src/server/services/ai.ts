@@ -1,5 +1,5 @@
 import type { AiProvider } from "@plainfare/core";
-import { buildImageExtractionPrompt, buildTextExtractionPrompt } from "@plainfare/core";
+import { buildImageExtractionPrompt, buildTextExtractionPrompt, buildNutritionEstimationPrompt } from "@plainfare/core";
 import type { Config } from "../config.js";
 
 /**
@@ -88,6 +88,41 @@ export class OpenAiCompatibleProvider implements AiProvider {
           },
         ],
         max_tokens: 4096,
+      }),
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`AI provider error ${response.status}: ${body}`);
+    }
+
+    const data = await response.json() as {
+      choices: { message: { content: string } }[];
+    };
+
+    return data.choices[0].message.content;
+  }
+
+  async estimateNutrition(ingredientText: string): Promise<string> {
+    const response = await fetch(`${this.endpoint}/v1/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(this.apiKey && { Authorization: `Bearer ${this.apiKey}` }),
+      },
+      body: JSON.stringify({
+        model: this.model,
+        messages: [
+          {
+            role: "system",
+            content: buildNutritionEstimationPrompt(),
+          },
+          {
+            role: "user",
+            content: ingredientText,
+          },
+        ],
+        max_tokens: 1024,
       }),
     });
 

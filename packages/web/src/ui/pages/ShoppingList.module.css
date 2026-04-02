@@ -1,0 +1,82 @@
+.backLink {
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-lg);
+  display: inline-block;
+}
+
+.title {
+  font-size: var(--font-size-5xl);
+  font-weight: 700;
+  margin-bottom: var(--space-2xl);
+}
+
+.section {
+  margin-bottom: var(--space-3xl);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  margin-bottom: var(--space-md);
+}
+
+.recipeGrid {
+  display: grid;
+  gap: var(--space-xs);
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.recipeOption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.recipeOption:hover {
+  background: var(--color-surface-hover);
+}
+
+.listHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.shoppingList {
+  list-style: none;
+  padding: 0;
+}
+
+.shoppingItem {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  padding: var(--space-xs) 0;
+  cursor: pointer;
+  font-size: var(--font-size-base);
+}
+
+.shoppingItem:hover {
+  background: var(--color-surface-hover);
+}
+
+.checked {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+.checkbox {
+  flex-shrink: 0;
+  font-size: var(--font-size-lg);
+}
+
+.note {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}

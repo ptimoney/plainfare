@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { trpc } from "../lib/trpc.js";
 import { Tag } from "../components/Tag.js";
 import { Button } from "../components/Button.js";
-import { scaleRecipe, serialiseRecipe } from "@plainfare/core";
+import { scaleRecipe, convertUnits, serialiseRecipe } from "@plainfare/core";
 import type { Recipe } from "@plainfare/core";
 import styles from "./RecipeDetail.module.css";
 
@@ -60,6 +60,9 @@ function RecipeHeader({ recipe, targetServings, onServingsChange, multiplier, on
     <>
       <h1 className={styles.title}>{recipe.title}</h1>
       {recipe.description && <p className={styles.description}>{recipe.description}</p>}
+      {recipe.image && (
+        <img className={styles.heroImage} src={recipe.image} alt={recipe.title} />
+      )}
       <div className={styles.metadata}>
         {hasServes ? (
           <ServingsAdjuster serves={targetServings} onChange={onServingsChange} />
@@ -81,11 +84,39 @@ function RecipeHeader({ recipe, targetServings, onServingsChange, multiplier, on
   );
 }
 
-function IngredientList({ groups }: { groups: Recipe["ingredientGroups"] }) {
+function UnitToggle({ value, onChange }: { value: string; onChange: (v: "original" | "metric" | "imperial") => void }) {
+  const options = [
+    { key: "original", label: "Original" },
+    { key: "metric", label: "Metric" },
+    { key: "imperial", label: "Imperial" },
+  ] as const;
+  return (
+    <span className={styles.servingsAdjuster}>
+      {options.map((o) => (
+        <button
+          key={o.key}
+          className={`${styles.multiplierBtn} ${o.key === value ? styles.multiplierActive : ""}`}
+          onClick={() => onChange(o.key)}
+        >
+          {o.label}
+        </button>
+      ))}
+    </span>
+  );
+}
+
+function IngredientList({ groups, unitSystem, onUnitSystemChange }: {
+  groups: Recipe["ingredientGroups"];
+  unitSystem: "original" | "metric" | "imperial";
+  onUnitSystemChange: (v: "original" | "metric" | "imperial") => void;
+}) {
   if (groups.length === 0) return null;
   return (
     <section className={styles.section}>
-      <h2 className={styles.sectionTitle}>Ingredients</h2>
+      <div className={styles.sectionHeader}>
+        <h2 className={styles.sectionTitle}>Ingredients</h2>
+        <UnitToggle value={unitSystem} onChange={onUnitSystemChange} />
+      </div>
       {groups.map((group, gi) => (
         <div key={gi} className={styles.ingredientGroup}>
           {group.title && <h3 className={styles.ingredientGroupTitle}>{group.title}</h3>}
@@ -120,18 +151,40 @@ function MethodSteps({ steps }: { steps: Recipe["steps"] }) {
   );
 }
 
-function NutritionSummary({ nutrition }: { nutrition: Recipe["nutrition"] }) {
-  if (!nutrition) return null;
+function NutritionSummary({ nutrition, slug, aiAvailable, onEstimated }: {
+  nutrition: Recipe["nutrition"];
+  slug: string;
+  aiAvailable: boolean;
+  onEstimated: () => void;
+}) {
+  const estimateMutation = trpc.recipes.estimateNutrition.useMutation({ onSuccess: onEstimated });
+
+  if (!nutrition && !aiAvailable) return null;
+
   return (
     <section className={styles.section}>
       <h2 className={styles.sectionTitle}>Nutrition</h2>
-      <div className={styles.nutritionRow}>
-        {nutrition.calories != null && <span>{nutrition.calories} cal</span>}
-        {nutrition.protein != null && <span>{nutrition.protein}g protein</span>}
-        {nutrition.carbs != null && <span>{nutrition.carbs}g carbs</span>}
-        {nutrition.fat != null && <span>{nutrition.fat}g fat</span>}
-        {nutrition.fibre != null && <span>{nutrition.fibre}g fibre</span>}
-      </div>
+      {nutrition ? (
+        <div className={styles.nutritionRow}>
+          {nutrition.calories != null && <span>{nutrition.calories} cal</span>}
+          {nutrition.protein != null && <span>{nutrition.protein}g protein</span>}
+          {nutrition.carbs != null && <span>{nutrition.carbs}g carbs</span>}
+          {nutrition.fat != null && <span>{nutrition.fat}g fat</span>}
+          {nutrition.fibre != null && <span>{nutrition.fibre}g fibre</span>}
+        </div>
+      ) : (
+        <div>
+          <Button
+            variant="secondary"
+            onClick={() => estimateMutation.mutate({ slug })}
+          >
+            {estimateMutation.isPending ? "Estimating..." : "Estimate nutrition"}
+          </Button>
+          {estimateMutation.isError && (
+            <span className={styles.error}> {estimateMutation.error.message}</span>
+          )}
+        </div>
+      )}
     </section>
   );
 }
@@ -201,6 +254,7 @@ function DeleteButton({ slug }: { slug: string }) {
 export function RecipeDetail() {
   const { slug } = useParams<{ slug: string }>();
   const utils = trpc.useUtils();
+  const { data: capabilities } = trpc.recipes.capabilities.useQuery();
   const { data, isLoading, error } = trpc.recipes.get.useQuery(
     { slug: slug! },
     { enabled: !!slug },
@@ -211,16 +265,23 @@ export function RecipeDetail() {
   const hasNumericServes = originalServings != null && !isNaN(originalServings);
   const [targetServings, setTargetServings] = useState<number | null>(null);
   const [multiplier, setMultiplier] = useState(1);
+  const [unitSystem, setUnitSystem] = useState<"original" | "metric" | "imperial">("original");
 
   const recipe = useMemo(() => {
     if (!data) return null;
+    let r = data.recipe;
     if (hasNumericServes) {
-      if (targetServings == null || targetServings === originalServings) return data.recipe;
-      return scaleRecipe(data.recipe, targetServings);
+      if (targetServings != null && targetServings !== originalServings) {
+        r = scaleRecipe(r, targetServings);
+      }
+    } else if (multiplier !== 1) {
+      r = scaleRecipe(r, multiplier);
     }
-    if (multiplier === 1) return data.recipe;
-    return scaleRecipe(data.recipe, multiplier);
-  }, [data, targetServings, hasNumericServes, originalServings, multiplier]);
+    if (unitSystem !== "original") {
+      r = convertUnits(r, unitSystem);
+    }
+    return r;
+  }, [data, targetServings, hasNumericServes, originalServings, multiplier, unitSystem]);
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p className={styles.error}>Error: {error.message}</p>;
@@ -258,9 +319,14 @@ export function RecipeDetail() {
         multiplier={multiplier}
         onMultiplierChange={setMultiplier}
       />
-      <IngredientList groups={recipe.ingredientGroups} />
+      <IngredientList groups={recipe.ingredientGroups} unitSystem={unitSystem} onUnitSystemChange={setUnitSystem} />
       <MethodSteps steps={recipe.steps} />
-      <NutritionSummary nutrition={recipe.nutrition} />
+      <NutritionSummary
+        nutrition={recipe.nutrition}
+        slug={slug!}
+        aiAvailable={capabilities?.ai ?? false}
+        onEstimated={() => utils.recipes.get.invalidate({ slug: slug! })}
+      />
       <RecipeNotes notes={recipe.notes} />
     </article>
   );

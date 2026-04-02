@@ -16,6 +16,14 @@
   margin-bottom: var(--space-lg);
 }
 
+.heroImage {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2xl);
+}
+
 .metadata {
   display: flex;
   gap: var(--space-2xl);
@@ -36,10 +44,16 @@
   margin-bottom: var(--space-3xl);
 }
 
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
 .sectionTitle {
   font-size: var(--font-size-2xl);
   font-weight: 600;
-  margin-bottom: var(--space-md);
 }
 
 .ingredientGroup {

@@ -4,17 +4,23 @@ import { Tabs } from "../components/Tabs.js";
 import { Alert } from "../components/Alert.js";
 import { JobProgress } from "../components/JobProgress.js";
 import { UrlIngestForm } from "../components/UrlIngestForm.js";
+import { BatchUrlIngestForm } from "../components/BatchUrlIngestForm.js";
 import { TextIngestForm } from "../components/TextIngestForm.js";
 import { ImageIngestForm } from "../components/ImageIngestForm.js";
+import { ImportIngestForm } from "../components/ImportIngestForm.js";
+import { VideoIngestForm } from "../components/VideoIngestForm.js";
 import { useHealthCheck } from "../hooks/useHealthCheck.js";
 import styles from "./Ingest.module.css";
 
-type Tab = "url" | "text" | "image";
+type Tab = "url" | "batch" | "text" | "image" | "import" | "video";
 
-const tabs = [
+const allTabs = [
   { key: "url", label: "From URL" },
+  { key: "batch", label: "Batch URLs" },
   { key: "text", label: "From Text" },
   { key: "image", label: "From Image" },
+  { key: "import", label: "Import" },
+  { key: "video", label: "From Video" },
 ];
 
 function AiNotConfigured() {
@@ -29,7 +35,10 @@ function AiNotConfigured() {
 export function Ingest() {
   const [activeTab, setActiveTab] = useState<Tab>("url");
   const [jobId, setJobId] = useState<string | null>(null);
-  const { aiAvailable } = useHealthCheck();
+  const { aiAvailable, ytdlpAvailable } = useHealthCheck();
+
+  // Only show video tab when both AI and yt-dlp are available
+  const tabs = allTabs.filter((t) => t.key !== "video" || (aiAvailable && ytdlpAvailable));
 
   function handleReset() {
     setJobId(null);
@@ -50,6 +59,10 @@ export function Ingest() {
             <UrlIngestForm onJobCreated={setJobId} />
           )}
 
+          {activeTab === "batch" && (
+            <BatchUrlIngestForm />
+          )}
+
           {activeTab === "text" && (
             aiAvailable === false
               ? <AiNotConfigured />
@@ -60,6 +73,14 @@ export function Ingest() {
             aiAvailable === false
               ? <AiNotConfigured />
               : <ImageIngestForm onJobCreated={setJobId} />
+          )}
+
+          {activeTab === "import" && (
+            <ImportIngestForm onJobCreated={setJobId} />
+          )}
+
+          {activeTab === "video" && (
+            <VideoIngestForm onJobCreated={setJobId} />
           )}
         </>
       )}

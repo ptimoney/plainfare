@@ -12,9 +12,10 @@ interface FileUploadProps {
   maxSizeMB?: number;
   value: FileData | null;
   onChange: (file: FileData | null) => void;
+  placeholder?: string;
 }
 
-export function FileUpload({ accept = "image/*", maxSizeMB = 10, value, onChange }: FileUploadProps) {
+export function FileUpload({ accept = "image/*", maxSizeMB = 10, value, onChange, placeholder = "Drag and drop a file, or click to select" }: FileUploadProps) {
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -68,7 +69,7 @@ export function FileUpload({ accept = "image/*", maxSizeMB = 10, value, onChange
         </div>
       ) : (
         <div className={styles.placeholder}>
-          Drag and drop an image, or click to select
+          {placeholder}
         </div>
       )}
     </div>

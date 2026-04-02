@@ -1,0 +1,61 @@
+.textarea {
+  width: 100%;
+  padding: var(--space-md);
+  font-family: monospace;
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+}
+
+.summary {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-md);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+}
+
+.url {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+.statusPending {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.statusDone {
+  color: var(--color-success-text);
+  flex-shrink: 0;
+}
+
+.statusError {
+  color: var(--color-error-text);
+  flex-shrink: 0;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-sm);
+}

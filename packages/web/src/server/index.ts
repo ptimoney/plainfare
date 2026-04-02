@@ -10,6 +10,9 @@ import { JobQueue } from "./jobs/queue.js";
 import { OpenAiCompatibleProvider } from "./services/ai.js";
 import { createAiIngestHandler, createAiTextIngestHandler } from "./jobs/ai-ingest.js";
 import { createBrowserFetchHandler } from "./jobs/browser-fetch.js";
+import { createImportIngestHandler } from "./jobs/import-ingest.js";
+import { createVideoIngestHandler } from "./jobs/video-ingest.js";
+import { isYtDlpAvailable } from "./services/subtitles.js";
 import { closeBrowser } from "./services/browser.js";
 import { createTelegramBot } from "./services/telegram.js";
 import type { AppContext } from "./trpc.js";
@@ -21,9 +24,12 @@ const jobQueue = new JobQueue(config.PLAINFARE_JOB_CONCURRENCY);
 // Register AI ingestion handler if AI provider is configured
 // Register job handlers
 jobQueue.registerHandler(createBrowserFetchHandler(library));
+jobQueue.registerHandler(createImportIngestHandler(library));
 
+let aiProvider: OpenAiCompatibleProvider | undefined;
+let ytdlpAvailable = false;
 if (config.PLAINFARE_AI_ENDPOINT) {
-  const aiProvider = new OpenAiCompatibleProvider(config);
+  aiProvider = new OpenAiCompatibleProvider(config);
   jobQueue.registerHandler(createAiIngestHandler(aiProvider, library));
   jobQueue.registerHandler(createAiTextIngestHandler(aiProvider, library));
   console.log(`AI ingestion enabled (model: ${config.PLAINFARE_AI_MODEL})`);
@@ -43,6 +49,7 @@ app.get("/api/health", (c) =>
     status: "ok",
     recipes: library.size,
     ai: !!config.PLAINFARE_AI_ENDPOINT,
+    ytdlp: ytdlpAvailable,
   }),
 );
 
@@ -52,7 +59,7 @@ app.all("/api/trpc/*", (c) => {
     endpoint: "/api/trpc",
     req: c.req.raw,
     router: appRouter,
-    createContext: (): AppContext => ({ config, library }),
+    createContext: (): AppContext => ({ config, library, aiProvider }),
   });
 });
 
@@ -73,6 +80,13 @@ app.get("*", async (c) => {
 async function main() {
   await library.initialize();
   console.log(`Loaded ${library.size} recipes from ${config.PLAINFARE_RECIPES_DIR}`);
+
+  // Register video ingest handler if both AI and yt-dlp are available
+  ytdlpAvailable = await isYtDlpAvailable();
+  if (ytdlpAvailable && aiProvider) {
+    jobQueue.registerHandler(createVideoIngestHandler(aiProvider, library));
+    console.log("Video ingestion enabled (yt-dlp found)");
+  }
 
   if (telegramBot) {
     await telegramBot.start();

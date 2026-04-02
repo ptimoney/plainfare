@@ -1,6 +1,6 @@
 import { unified } from "unified";
 import remarkParse from "remark-parse";
-import type { Root, Content, Heading, Paragraph, List, Image } from "mdast";
+import type { Root, Content, Heading, Paragraph, List, Image, ThematicBreak } from "mdast";
 import type {
   ParseResult,
   Recipe,
@@ -45,6 +45,22 @@ export function parseRecipe(markdown: string): ParseResult {
     if (ingredientsIndex === -1) ingredientsIndex = pseudo.ingredients;
     if (methodIndex === -1) methodIndex = pseudo.method;
     if (notesIndex === -1) notesIndex = pseudo.notes;
+  }
+
+  // RecipeMD-style: thematic breaks (---) as section separators
+  // First --- separates preamble from ingredients, second --- separates ingredients from method
+  if (ingredientsIndex === -1 && methodIndex === -1) {
+    const breaks = children
+      .map((n, i) => (n.type === "thematicBreak" ? i : -1))
+      .filter((i) => i > h1Index);
+    if (breaks.length >= 2) {
+      ingredientsIndex = breaks[0];
+      methodIndex = breaks[1];
+    } else if (breaks.length === 1) {
+      // Single break: could separate preamble from ingredients+method
+      // Check if there's a list before and an ordered list after
+      ingredientsIndex = breaks[0];
+    }
   }
 
   // Title
@@ -173,7 +189,33 @@ function extractPreamble(
         continue;
       }
 
-      // Skip paragraphs that are purely emphasis/italic (e.g. "*Updated Dec 2024*")
+      // RecipeMD-style: *italic* paragraph as tags (comma-separated short words)
+      // Must have commas and short items to distinguish from prose like "*Updated Dec 2024*"
+      if (isPurelyEmphasis(node as Paragraph) && !fields.tags) {
+        const tagText = inlineToText((node as Paragraph).children);
+        if (tagText.includes(",")) {
+          const parsed = tagText.split(",").map((t) => t.trim()).filter(Boolean);
+          const allShort = parsed.every((t) => t.split(/\s+/).length <= 3);
+          if (parsed.length >= 2 && allShort) {
+            recipe.tags = parsed;
+            fields.tags = "resolved";
+            continue;
+          }
+        }
+      }
+
+      // RecipeMD-style: **bold** paragraph as yield/serves
+      if (isPurelyStrong(node as Paragraph) && !fields.serves) {
+        const yieldText = inlineToText((node as Paragraph).children);
+        const yieldMatch = /^(\d[\d\s\-–]*)\s*(.*)$/.exec(yieldText.trim());
+        if (yieldMatch) {
+          recipe.serves = yieldText.trim();
+          fields.serves = "resolved";
+          continue;
+        }
+      }
+
+      // Skip remaining purely-emphasis paragraphs (e.g. "*Updated Dec 2024*")
       if (isPurelyEmphasis(node as Paragraph)) continue;
 
       // Skip ingredient/method intro phrases ("You'll need:", "Here's what you need:", etc.)
@@ -203,6 +245,13 @@ function isPurelyEmphasis(para: Paragraph): boolean {
   return (
     para.children.length === 1 &&
     para.children[0].type === "emphasis"
+  );
+}
+
+function isPurelyStrong(para: Paragraph): boolean {
+  return (
+    para.children.length === 1 &&
+    para.children[0].type === "strong"
   );
 }
 
