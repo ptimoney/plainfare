@@ -184,10 +184,11 @@ export class RecipeLibrary {
   }
 
   private slugify(title: string): string {
-    return title
+    const slug = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
+    return slug || "untitled";
   }
 
   private uniqueSlug(base: string): string {

@@ -27,7 +27,7 @@ export function createTelegramBot(config: Config, jobQueue: JobQueue) {
 
   bot.command("start", (ctx) =>
     ctx.reply(
-      "Hi! Send me a recipe URL, paste recipe text, or share a photo of a recipe and I'll save it to your collection.",
+      "Hi! Send me a recipe URL (including YouTube, TikTok, or Instagram), paste recipe text, share a photo, or send a .paprikarecipes/.zip file to import recipes into your collection.",
     ),
   );
 
@@ -123,10 +123,10 @@ export function createTelegramBot(config: Config, jobQueue: JobQueue) {
 
     if (urlMatch) {
       const url = urlMatch[0];
-      const isVideoUrl = /(?:youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts\/)/.test(url);
+      const isVideoUrl = /(?:youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts\/|tiktok\.com|instagram\.com\/reel)/.test(url);
 
       if (isVideoUrl && jobQueue.hasHandler("video-ingest")) {
-        const status = await ctx.reply(`Got it! Extracting recipe from video subtitles...`, {
+        const status = await ctx.reply(`Got it! Extracting recipe from video...`, {
           reply_parameters: { message_id: ctx.message.message_id },
         });
 

@@ -197,7 +197,7 @@ function extractPreamble(
           const parsed = tagText.split(",").map((t) => t.trim()).filter(Boolean);
           const allShort = parsed.every((t) => t.split(/\s+/).length <= 3);
           if (parsed.length >= 2 && allShort) {
-            recipe.tags = parsed;
+            recipe.tags = deduplicateTagList(parsed);
             fields.tags = "resolved";
             continue;
           }
@@ -301,11 +301,11 @@ function parseMetadataLine(
     recipe.source = trimmed.slice("source:".length).trim();
     fields.source = "resolved";
   } else if (lower.startsWith("tags:")) {
-    recipe.tags = trimmed
+    recipe.tags = deduplicateTagList(trimmed
       .slice("tags:".length)
       .split(",")
       .map((t) => t.trim())
-      .filter(Boolean);
+      .filter(Boolean));
     fields.tags = "resolved";
   } else if (lower.startsWith("serves:")) {
     recipe.serves = trimmed.slice("serves:".length).trim();
@@ -655,6 +655,19 @@ function inlineToText(nodes: Content[]): string {
       return "";
     })
     .join("");
+}
+
+function deduplicateTagList(tags: string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const tag of tags) {
+    const lower = tag.toLowerCase().trim();
+    if (lower && !seen.has(lower)) {
+      seen.add(lower);
+      result.push(lower);
+    }
+  }
+  return result;
 }
 
 function listItemToText(item: Content): string {

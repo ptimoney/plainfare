@@ -12,6 +12,16 @@ import { ShoppingList } from "./pages/ShoppingList.js";
 import { Duplicates } from "./pages/Duplicates.js";
 import styles from "./main.module.css";
 
+function DuplicatesNavLink() {
+  const { data } = trpc.recipes.duplicates.useQuery();
+  if (!data || data.length === 0) return null;
+  return (
+    <Link to="/duplicates" className={styles.navLink}>
+      Duplicates ({data.length})
+    </Link>
+  );
+}
+
 function App() {
   const [queryClient] = useState(() => new QueryClient());
   const [trpcClient] = useState(() =>
@@ -30,7 +40,7 @@ function App() {
             </h1>
             <nav className={styles.nav}>
               <Link to="/shopping" className={styles.navLink}>Shopping List</Link>
-              <Link to="/duplicates" className={styles.navLink}>Duplicates</Link>
+              <DuplicatesNavLink />
               <Link to="/ingest" className={styles.addButton}>+ Add Recipe</Link>
             </nav>
           </header>

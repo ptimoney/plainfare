@@ -24,14 +24,14 @@ export function VideoIngestForm({ onJobCreated }: VideoIngestFormProps) {
   return (
     <form onSubmit={handleSubmit}>
       <p className={styles.hint}>
-        Paste a YouTube URL to extract the recipe from its subtitles.
+        Paste a video URL to extract the recipe (YouTube, TikTok, Instagram).
       </p>
       <div className={styles.field}>
         <Input
           type="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://youtube.com/watch?v=..."
+          placeholder="https://youtube.com/watch?v=... or TikTok/Instagram link"
           required
         />
       </div>

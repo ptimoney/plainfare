@@ -97,7 +97,9 @@ export function parseCooklang(source: string): ParseResult {
 
   // Tags
   if (metadata.has("tags")) {
-    recipe.tags = metadata.get("tags")!.split(",").map((t) => t.trim()).filter(Boolean);
+    const rawTags = metadata.get("tags")!.split(",").map((t) => t.toLowerCase().trim()).filter(Boolean);
+    const seen = new Set<string>();
+    recipe.tags = rawTags.filter((t) => { if (seen.has(t)) return false; seen.add(t); return true; });
     fields.tags = "resolved";
   } else {
     fields.tags = "missing";

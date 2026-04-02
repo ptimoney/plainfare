@@ -1,0 +1,13 @@
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-alt);
+  color: var(--color-text-faint);
+}
+
+.icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  opacity: 0.5;
+}

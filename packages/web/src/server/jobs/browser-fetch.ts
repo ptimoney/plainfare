@@ -16,12 +16,20 @@ export interface BrowserFetchOutput {
   usedBrowser: boolean;
 }
 
+const VIDEO_URL_RE = /(?:youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts\/|tiktok\.com|instagram\.com\/reel)/i;
+
 export function createBrowserFetchHandler(
   library: RecipeLibrary,
 ): JobHandler<BrowserFetchInput, BrowserFetchOutput> {
   return {
     type: "url-ingest",
     async execute(input, report) {
+      if (VIDEO_URL_RE.test(input.url)) {
+        throw new Error(
+          "This looks like a video URL. Use the \"From Video\" tab to extract recipes from video subtitles.",
+        );
+      }
+
       report(10);
 
       const result = await ingestFromUrl(input.url, {

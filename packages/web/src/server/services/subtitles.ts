@@ -15,10 +15,29 @@ export async function isYtDlpAvailable(): Promise<boolean> {
 }
 
 /**
- * Extract subtitles from a video URL using yt-dlp.
- * Returns the subtitle text, or throws if no subtitles are available.
+ * Extract the thumbnail URL from a video using yt-dlp.
+ * Returns undefined if no thumbnail is available.
  */
-export async function extractSubtitles(url: string): Promise<string> {
+export async function extractThumbnail(url: string): Promise<string | undefined> {
+  return new Promise((resolve) => {
+    execFile(
+      "yt-dlp",
+      ["--skip-download", "--print", "thumbnail", url],
+      { timeout: 15_000 },
+      (err, stdout) => {
+        if (err) return resolve(undefined);
+        const thumb = stdout.trim();
+        resolve(thumb || undefined);
+      },
+    );
+  });
+}
+
+/**
+ * Extract subtitles from a video URL using yt-dlp.
+ * Returns the subtitle text, or undefined if no subtitles are available.
+ */
+export async function extractSubtitles(url: string): Promise<string | undefined> {
   const tempDir = await mkdtemp(join(tmpdir(), "plainfare-subs-"));
 
   try {
@@ -32,7 +51,7 @@ export async function extractSubtitles(url: string): Promise<string> {
           "--skip-download",
           "--write-auto-sub",
           "--write-sub",
-          "--sub-lang", "en",
+          "--sub-lang", "en.*,en",
           "--sub-format", "vtt",
           "--output", outputTemplate,
           url,
@@ -50,14 +69,49 @@ export async function extractSubtitles(url: string): Promise<string> {
     const files = dirEntries.filter((f) => f.endsWith(".vtt")).map((f) => join(tempDir, f));
 
     if (files.length === 0) {
-      throw new Error("No subtitles available for this video. Try a video with captions enabled.");
+      return undefined;
     }
 
     const vttContent = await readFile(files[0], "utf-8");
     return vttToPlainText(vttContent);
+  } catch {
+    return undefined;
   } finally {
     await rm(tempDir, { recursive: true, force: true });
   }
+}
+
+export interface VideoMetadata {
+  title: string;
+  description: string;
+  thumbnail?: string;
+}
+
+/**
+ * Extract video metadata (title, description, thumbnail) using yt-dlp --dump-json.
+ * Works across YouTube, TikTok, Instagram, and other supported platforms.
+ */
+export async function extractVideoMetadata(url: string): Promise<VideoMetadata> {
+  return new Promise((resolve, reject) => {
+    execFile(
+      "yt-dlp",
+      ["--skip-download", "--dump-json", url],
+      { timeout: 30_000, maxBuffer: 10 * 1024 * 1024 },
+      (err, stdout) => {
+        if (err) return reject(new Error(`Failed to extract video metadata: ${err.message}`));
+        try {
+          const data = JSON.parse(stdout);
+          resolve({
+            title: data.title ?? data.fulltitle ?? "",
+            description: data.description ?? "",
+            thumbnail: data.thumbnail || undefined,
+          });
+        } catch {
+          reject(new Error("Failed to parse video metadata"));
+        }
+      },
+    );
+  });
 }
 
 /**

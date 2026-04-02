@@ -71,12 +71,24 @@ export const recipesRouter = router({
       );
 
       const rawResponse = await ctx.aiProvider.estimateNutrition(ingredientLines.join("\n"));
-      const nutrition = parseNutritionResponse(rawResponse);
-      if (!nutrition) {
+      const totalNutrition = parseNutritionResponse(rawResponse);
+      if (!totalNutrition) {
         throw new Error("Failed to parse nutrition response from AI");
       }
 
-      // Update recipe with nutrition data
+      // Divide by servings to get per-serving values
+      const servings = entry.recipe.serves ? parseInt(entry.recipe.serves, 10) : NaN;
+      const nutrition = Number.isFinite(servings) && servings > 1
+        ? {
+            ...(totalNutrition.calories != null && { calories: Math.round(totalNutrition.calories / servings) }),
+            ...(totalNutrition.protein != null && { protein: Math.round(totalNutrition.protein / servings) }),
+            ...(totalNutrition.carbs != null && { carbs: Math.round(totalNutrition.carbs / servings) }),
+            ...(totalNutrition.fat != null && { fat: Math.round(totalNutrition.fat / servings) }),
+            ...(totalNutrition.fibre != null && { fibre: Math.round(totalNutrition.fibre / servings) }),
+          }
+        : totalNutrition;
+
+      // Update recipe with per-serving nutrition data
       const updatedRecipe: Recipe = { ...entry.recipe, nutrition };
       const markdown = serialiseRecipe(updatedRecipe);
       return ctx.library.update(input.slug, markdown);

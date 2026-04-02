@@ -4,6 +4,7 @@ import { trpc } from "../lib/trpc.js";
 import { Input } from "../components/Input.js";
 import { Card } from "../components/Card.js";
 import { Tag } from "../components/Tag.js";
+import { RecipeImage } from "../components/RecipeImage.js";
 import styles from "./RecipeList.module.css";
 
 export function RecipeList() {
@@ -70,9 +71,7 @@ export function RecipeList() {
       <div className={styles.grid}>
         {data?.map((entry) => (
           <Card key={entry.slug} to={`/recipes/${entry.slug}`}>
-            {entry.recipe.image && (
-              <img className={styles.cardImage} src={entry.recipe.image} alt={entry.recipe.title} loading="lazy" />
-            )}
+            <RecipeImage className={styles.cardImage} src={entry.recipe.image} alt={entry.recipe.title} />
             <h2 className={styles.cardTitle}>{entry.recipe.title}</h2>
             {entry.recipe.description && (
               <p className={styles.cardDescription}>

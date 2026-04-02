@@ -9,6 +9,7 @@ export function Duplicates() {
   const deleteMutation = trpc.recipes.delete.useMutation({
     onSuccess: () => {
       utils.recipes.duplicates.invalidate();
+      utils.recipes.list.invalidate();
     },
   });
 

@@ -57,6 +57,19 @@ function parseNutritionalInfo(raw: string | undefined): Nutrition | undefined {
   return Object.keys(nutrition).length > 0 ? nutrition : undefined;
 }
 
+function deduplicateTags(tags: string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const tag of tags) {
+    const lower = tag.toLowerCase().trim();
+    if (lower && !seen.has(lower)) {
+      seen.add(lower);
+      result.push(lower);
+    }
+  }
+  return result;
+}
+
 function paprikaToRecipe(raw: PaprikaRecipe): Recipe {
   const recipe: Recipe = {
     title: raw.name || "Untitled Recipe",
@@ -68,7 +81,7 @@ function paprikaToRecipe(raw: PaprikaRecipe): Recipe {
   if (raw.image_url) recipe.image = raw.image_url;
   if (raw.source_url) recipe.source = raw.source_url;
   else if (raw.source) recipe.source = raw.source;
-  if (raw.categories && raw.categories.length > 0) recipe.tags = raw.categories;
+  if (raw.categories && raw.categories.length > 0) recipe.tags = deduplicateTags(raw.categories);
   if (raw.servings) recipe.serves = raw.servings;
 
   const prep = parseTimeMinutes(raw.prep_time);

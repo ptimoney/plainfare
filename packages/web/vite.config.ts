@@ -11,6 +11,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": "http://localhost:3141",
+      "/recipes-images": "http://localhost:3141",
     },
   },
 });

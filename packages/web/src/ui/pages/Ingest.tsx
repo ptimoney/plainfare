@@ -32,13 +32,24 @@ function AiNotConfigured() {
   );
 }
 
+function VideoNotAvailable({ aiAvailable, ytdlpAvailable }: { aiAvailable: boolean | null; ytdlpAvailable: boolean | null }) {
+  const missing: string[] = [];
+  if (!aiAvailable) missing.push("AI provider (PLAINFARE_AI_ENDPOINT)");
+  if (!ytdlpAvailable) missing.push("yt-dlp");
+  return (
+    <Alert variant="warning">
+      Video ingestion requires {missing.join(" and ")} to be available.
+      {!ytdlpAvailable && <> Install <code>yt-dlp</code> on the host or use the Docker image which includes it.</>}
+    </Alert>
+  );
+}
+
 export function Ingest() {
   const [activeTab, setActiveTab] = useState<Tab>("url");
   const [jobId, setJobId] = useState<string | null>(null);
   const { aiAvailable, ytdlpAvailable } = useHealthCheck();
 
-  // Only show video tab when both AI and yt-dlp are available
-  const tabs = allTabs.filter((t) => t.key !== "video" || (aiAvailable && ytdlpAvailable));
+  const tabs = allTabs;
 
   function handleReset() {
     setJobId(null);
@@ -80,7 +91,9 @@ export function Ingest() {
           )}
 
           {activeTab === "video" && (
-            <VideoIngestForm onJobCreated={setJobId} />
+            aiAvailable === false || ytdlpAvailable === false
+              ? <VideoNotAvailable aiAvailable={aiAvailable} ytdlpAvailable={ytdlpAvailable} />
+              : <VideoIngestForm onJobCreated={setJobId} />
           )}
         </>
       )}

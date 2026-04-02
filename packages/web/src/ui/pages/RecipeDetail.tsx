@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { trpc } from "../lib/trpc.js";
 import { Tag } from "../components/Tag.js";
 import { Button } from "../components/Button.js";
+import { RecipeImage } from "../components/RecipeImage.js";
 import { scaleRecipe, convertUnits, serialiseRecipe } from "@plainfare/core";
 import type { Recipe } from "@plainfare/core";
 import styles from "./RecipeDetail.module.css";
@@ -60,9 +61,7 @@ function RecipeHeader({ recipe, targetServings, onServingsChange, multiplier, on
     <>
       <h1 className={styles.title}>{recipe.title}</h1>
       {recipe.description && <p className={styles.description}>{recipe.description}</p>}
-      {recipe.image && (
-        <img className={styles.heroImage} src={recipe.image} alt={recipe.title} />
-      )}
+      <RecipeImage className={styles.heroImage} src={recipe.image} alt={recipe.title} />
       <div className={styles.metadata}>
         {hasServes ? (
           <ServingsAdjuster serves={targetServings} onChange={onServingsChange} />
@@ -151,9 +150,10 @@ function MethodSteps({ steps }: { steps: Recipe["steps"] }) {
   );
 }
 
-function NutritionSummary({ nutrition, slug, aiAvailable, onEstimated }: {
+function NutritionSummary({ nutrition, slug, serves, aiAvailable, onEstimated }: {
   nutrition: Recipe["nutrition"];
   slug: string;
+  serves?: string;
   aiAvailable: boolean;
   onEstimated: () => void;
 }) {
@@ -161,9 +161,12 @@ function NutritionSummary({ nutrition, slug, aiAvailable, onEstimated }: {
 
   if (!nutrition && !aiAvailable) return null;
 
+  const numericServes = serves ? parseInt(serves, 10) : NaN;
+  const isPerServing = Number.isFinite(numericServes) && numericServes > 1;
+
   return (
     <section className={styles.section}>
-      <h2 className={styles.sectionTitle}>Nutrition</h2>
+      <h2 className={styles.sectionTitle}>Nutrition{isPerServing ? " (per serving)" : ""}</h2>
       {nutrition ? (
         <div className={styles.nutritionRow}>
           {nutrition.calories != null && <span>{nutrition.calories} cal</span>}
@@ -232,8 +235,12 @@ function RecipeEditor({ slug, initialMarkdown, onSaved, onCancel }: {
 function DeleteButton({ slug }: { slug: string }) {
   const [confirming, setConfirming] = useState(false);
   const navigate = useNavigate();
+  const utils = trpc.useUtils();
   const deleteMutation = trpc.recipes.delete.useMutation({
-    onSuccess: () => navigate("/"),
+    onSuccess: () => {
+      utils.recipes.list.invalidate();
+      navigate("/");
+    },
   });
 
   if (confirming) {
@@ -298,6 +305,7 @@ export function RecipeDetail() {
           onSaved={() => {
             setEditing(false);
             utils.recipes.get.invalidate({ slug: slug! });
+            utils.recipes.list.invalidate();
           }}
           onCancel={() => setEditing(false)}
         />
@@ -322,10 +330,14 @@ export function RecipeDetail() {
       <IngredientList groups={recipe.ingredientGroups} unitSystem={unitSystem} onUnitSystemChange={setUnitSystem} />
       <MethodSteps steps={recipe.steps} />
       <NutritionSummary
-        nutrition={recipe.nutrition}
+        nutrition={data!.recipe.nutrition}
         slug={slug!}
+        serves={data!.recipe.serves}
         aiAvailable={capabilities?.ai ?? false}
-        onEstimated={() => utils.recipes.get.invalidate({ slug: slug! })}
+        onEstimated={() => {
+          utils.recipes.get.invalidate({ slug: slug! });
+          utils.recipes.list.invalidate();
+        }}
       />
       <RecipeNotes notes={recipe.notes} />
     </article>

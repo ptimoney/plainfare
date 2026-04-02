@@ -63,6 +63,28 @@ app.all("/api/trpc/*", (c) => {
   });
 });
 
+// Serve recipe images from the recipes directory
+app.get("/recipes-images/*", async (c) => {
+  const filename = c.req.path.replace("/recipes-images/", "");
+  if (filename.includes("..") || filename.includes("/")) {
+    return c.text("Not found", 404);
+  }
+  const { readFile: rf } = await import("node:fs/promises");
+  const { resolve: res } = await import("node:path");
+  try {
+    const filePath = res(config.PLAINFARE_RECIPES_DIR, filename);
+    const data = await rf(filePath);
+    const ext = filename.split(".").pop()?.toLowerCase();
+    const mimeTypes: Record<string, string> = {
+      jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png",
+      webp: "image/webp", gif: "image/gif",
+    };
+    return c.body(data, { headers: { "Content-Type": mimeTypes[ext ?? ""] ?? "application/octet-stream" } });
+  } catch {
+    return c.text("Not found", 404);
+  }
+});
+
 // Serve static SPA assets in production
 app.use("/assets/*", serveStatic({ root: "./dist/ui" }));
 

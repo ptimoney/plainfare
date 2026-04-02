@@ -1,3 +1,5 @@
+import { writeFile } from "node:fs/promises";
+import { resolve, dirname } from "node:path";
 import { parseAiRecipeResponse } from "@plainfare/core";
 import type { AiProvider, Recipe } from "@plainfare/core";
 import type { JobHandler } from "./queue.js";
@@ -48,14 +50,37 @@ export function createAiIngestHandler(
       // Write to library
       const entry = await library.add(recipe);
 
+      // Save the uploaded image alongside the recipe file if AI didn't extract an image
+      if (!entry.recipe.image) {
+        const ext = mimeToExt(input.mimeType);
+        const imageFilename = `${entry.slug}.${ext}`;
+        const imagePath = resolve(dirname(entry.filePath), imageFilename);
+        await writeFile(imagePath, imageBuffer);
+        const { serialiseRecipe } = await import("@plainfare/core");
+        await library.update(entry.slug,
+          serialiseRecipe({ ...entry.recipe, image: imageFilename }),
+        );
+      }
+
       report(100);
 
+      const final = library.get(entry.slug)!;
       return {
-        slug: entry.slug,
-        recipe: entry.recipe,
+        slug: final.slug,
+        recipe: final.recipe,
       };
     },
   };
+}
+
+function mimeToExt(mimeType: string): string {
+  const map: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "image/gif": "gif",
+  };
+  return map[mimeType] ?? "jpg";
 }
 
 export function createAiTextIngestHandler(

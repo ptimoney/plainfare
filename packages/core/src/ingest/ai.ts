@@ -120,7 +120,16 @@ export function parseAiRecipeResponse(response: string): ParseResult {
   if (raw.description) recipe.description = raw.description;
   if (raw.image) recipe.image = raw.image;
   if (raw.source) recipe.source = raw.source;
-  if (raw.tags && Array.isArray(raw.tags)) recipe.tags = raw.tags;
+  if (raw.tags && Array.isArray(raw.tags)) {
+    const seen = new Set<string>();
+    recipe.tags = (raw.tags as string[])
+      .map((t) => String(t).toLowerCase().trim())
+      .filter((t) => {
+        if (!t || seen.has(t)) return false;
+        seen.add(t);
+        return true;
+      });
+  }
   if (raw.serves) recipe.serves = String(raw.serves);
 
   if (raw.time) {

@@ -23,7 +23,8 @@ export function serialiseRecipe(recipe: Recipe): string {
     metaLines.push(`Source: ${recipe.source}`);
   }
   if (recipe.tags && recipe.tags.length > 0) {
-    metaLines.push(`Tags: ${recipe.tags.join(", ")}`);
+    const uniqueTags = deduplicateTags(recipe.tags);
+    metaLines.push(`Tags: ${uniqueTags.join(", ")}`);
   }
   if (recipe.serves) {
     metaLines.push(`Serves: ${recipe.serves}`);
@@ -131,4 +132,18 @@ function formatIngredient(ing: Ingredient): string {
 
 function formatQuantity(n: number): string {
   return Number.isInteger(n) ? String(n) : String(n);
+}
+
+/** Deduplicate tags case-insensitively, preserving the first occurrence's casing and lowercasing all. */
+function deduplicateTags(tags: string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const tag of tags) {
+    const lower = tag.toLowerCase().trim();
+    if (lower && !seen.has(lower)) {
+      seen.add(lower);
+      result.push(lower);
+    }
+  }
+  return result;
 }

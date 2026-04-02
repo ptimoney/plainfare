@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { vttToPlainText } from "../src/server/services/subtitles.js";
+import type { VideoMetadata } from "../src/server/services/subtitles.js";
 
 describe("vttToPlainText", () => {
   it("extracts text from a basic VTT file", () => {
@@ -85,5 +86,26 @@ Line two`;
   it("handles empty VTT", () => {
     const result = vttToPlainText("WEBVTT\n\n");
     expect(result).toBe("");
+  });
+});
+
+describe("VideoMetadata type", () => {
+  it("has the expected shape", () => {
+    const meta: VideoMetadata = {
+      title: "Best Pasta Carbonara Recipe",
+      description: "Ingredients:\n- 200g spaghetti\n- 4 egg yolks",
+      thumbnail: "https://i.ytimg.com/vi/abc123/maxresdefault.jpg",
+    };
+    expect(meta.title).toBe("Best Pasta Carbonara Recipe");
+    expect(meta.description).toContain("200g spaghetti");
+    expect(meta.thumbnail).toBeDefined();
+  });
+
+  it("allows undefined thumbnail", () => {
+    const meta: VideoMetadata = {
+      title: "Quick Recipe",
+      description: "Some description",
+    };
+    expect(meta.thumbnail).toBeUndefined();
   });
 });

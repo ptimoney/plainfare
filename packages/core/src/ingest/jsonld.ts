@@ -132,13 +132,23 @@ function extractImage(value: unknown): string | undefined {
 }
 
 function extractKeywords(value: unknown): string[] {
+  let raw: string[] = [];
   if (typeof value === "string") {
-    return value.split(",").map((s) => s.trim()).filter(Boolean);
+    raw = value.split(",").map((s) => s.trim()).filter(Boolean);
+  } else if (Array.isArray(value)) {
+    raw = value.map((v) => String(v).trim()).filter(Boolean);
   }
-  if (Array.isArray(value)) {
-    return value.map((v) => String(v).trim()).filter(Boolean);
+  // Deduplicate case-insensitively, normalise to lowercase
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const tag of raw) {
+    const lower = tag.toLowerCase();
+    if (lower && !seen.has(lower)) {
+      seen.add(lower);
+      result.push(lower);
+    }
   }
-  return [];
+  return result;
 }
 
 function extractServes(value: unknown): string | undefined {

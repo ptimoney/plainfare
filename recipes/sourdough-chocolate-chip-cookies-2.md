@@ -5,9 +5,10 @@ Chocolate chip cookies made using sourdough discard
 ![Sourdough Chocolate Chip Cookies](https://images.squarespace-cdn.com/content/v1/549367d9e4b0b0a3e2543543/1588847462263-HFW7U6EQIO7I6U22UUGV/ke17ZwdGBToddI8pDm48kC3IjiFolp2zrk5rXbE7yJMUqsxRUqqbr1mOJYKfIPR7LoDQ9mXPOjoJoqy81S2I8PaoYXhp6HxIwZIk7-Mi3Tsic-L2IOPH3Dwrhl-Ne3Z2vfIu_wLWMZmMN08hNvcIO8BSZtqgn0UtH2Pt_VcztpY_twk1mUNduAk0T15_nZ7z/image-asset.jpeg?format=1500w)
 
 Source: https://www.theboywhobakes.co.uk/recipes/2020/5/7/sourdough-chocolate-chip-cookie
-Tags: sourdough, discard, sourdough starter, chocolate chip cookies, chocolate chip, baking with discard, sourdough discard, sourdough, theboywhobakes, the boy who bakes, edd Kimber, ed Kimber
+Tags: sourdough, discard, sourdough starter, chocolate chip cookies, chocolate chip, baking with discard, sourdough discard, theboywhobakes, the boy who bakes, edd kimber, ed kimber
 Serves: 25
 Time: 20 mins prep | 16 mins cook
+Calories: 409 | Protein: 7g | Carbs: 55g | Fat: 31g | Fibre: 4g
 
 ## Ingredients
 
