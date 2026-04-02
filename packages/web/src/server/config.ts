@@ -17,7 +17,14 @@ const configSchema = z.object({
 
   // Telegram bot (optional — enables mobile ingestion via Telegram)
   PLAINFARE_TELEGRAM_BOT_TOKEN: z.string().optional(),
-});
+
+  // Authentication (optional — when set, all routes require login)
+  PLAINFARE_USERNAME: z.string().optional(),
+  PLAINFARE_PASSWORD: z.string().optional(),
+}).refine(
+  (c) => (!c.PLAINFARE_USERNAME && !c.PLAINFARE_PASSWORD) || (!!c.PLAINFARE_USERNAME && !!c.PLAINFARE_PASSWORD),
+  { message: "PLAINFARE_USERNAME and PLAINFARE_PASSWORD must both be set or both be unset" },
+);
 
 export type Config = z.infer<typeof configSchema>;
 

@@ -1,9 +1,20 @@
 # plainfare
 
-A markdown-first recipe management tool. Your `.md` files **are** the database —
-not an export format, not a sync target. Edit recipes in Obsidian, sync with
-iCloud, version control with git. If plainfare disappeared tomorrow, your recipe
-files remain fully intact and usable.
+A markdown-first recipe houeshold management tool. Bringing the plain text
+accounting mindset to recipes. Your `.md` files **are** the database — not an
+export format, not a sync target. Edit recipes in Obsidian, or vscode or neovim,
+sync with iCloud, or syncthing, or don't sync at all, version control with git
+or don't. If plainfare disappeared tomorrow, your recipe files remain fully
+intact and usable.
+
+At it's core it is a recipe ingestion service which processes recipes into
+human-centred, readable markdown recipe files (ie not human parseable
+pseudo-code), and you can use it just like that. Point its storage at an
+obsidian vault, or anywhere else you like, add the telegram app and start
+sharing recipies from websites, YouTube videos, photos, etc and come back to
+formatted, saved recipe markdown files. If you want you can view, edit, manage,
+convert or scale the recipes in the web portal, but you don't need to. Use your
+existing systems if you like
 
 ## Features
 
@@ -96,6 +107,10 @@ services:
       #
       # Telegram bot (send recipes from your phone)
       # PLAINFARE_TELEGRAM_BOT_TOKEN: "123456:ABC-DEF..."
+      #
+      # Authentication (both required to enable login)
+      # PLAINFARE_USERNAME: admin
+      # PLAINFARE_PASSWORD: changeme
     restart: unless-stopped
 ```
 
@@ -104,16 +119,18 @@ instead: `ghcr.io/ptimoney/plainfare:latest-chromium`
 
 ## Configuration
 
-| Variable                       | Default     | Description                           |
-| ------------------------------ | ----------- | ------------------------------------- |
-| `PLAINFARE_RECIPES_DIR`        | `./recipes` | Path to recipe `.md` files            |
-| `PLAINFARE_PORT`               | `3141`      | Server port                           |
-| `PLAINFARE_BASE_URL`           | —           | Public URL (for Telegram reply links) |
-| `PLAINFARE_AI_ENDPOINT`        | —           | OpenAI-compatible API base URL        |
-| `PLAINFARE_AI_API_KEY`         | —           | API key for AI provider               |
-| `PLAINFARE_AI_MODEL`           | `gpt-4o`    | Model name                            |
-| `PLAINFARE_TELEGRAM_BOT_TOKEN` | —           | Telegram bot token                    |
-| `PLAINFARE_JOB_CONCURRENCY`    | `2`         | Max concurrent background jobs        |
+| Variable                       | Default     | Description                            |
+| ------------------------------ | ----------- | -------------------------------------- |
+| `PLAINFARE_RECIPES_DIR`        | `./recipes` | Path to recipe `.md` files             |
+| `PLAINFARE_PORT`               | `3141`      | Server port                            |
+| `PLAINFARE_BASE_URL`           | —           | Public URL (for Telegram reply links)  |
+| `PLAINFARE_AI_ENDPOINT`        | —           | OpenAI-compatible API base URL         |
+| `PLAINFARE_AI_API_KEY`         | —           | API key for AI provider                |
+| `PLAINFARE_AI_MODEL`           | `gpt-4o`    | Model name                             |
+| `PLAINFARE_TELEGRAM_BOT_TOKEN` | —           | Telegram bot token                     |
+| `PLAINFARE_JOB_CONCURRENCY`    | `2`         | Max concurrent background jobs         |
+| `PLAINFARE_USERNAME`           | —           | Username for login (enables auth)      |
+| `PLAINFARE_PASSWORD`           | —           | Password for login (requires username) |
 
 URL ingestion works without AI — paste a recipe URL and it'll be extracted
 deterministically via JSON-LD or HTML parsing. AI unlocks image, text, and video

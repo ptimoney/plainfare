@@ -14,4 +14,6 @@ services:
         required: false
     environment:
       PLAINFARE_RECIPES_DIR: /data/recipes
+      # PLAINFARE_USERNAME: admin
+      # PLAINFARE_PASSWORD: changeme
     restart: unless-stopped

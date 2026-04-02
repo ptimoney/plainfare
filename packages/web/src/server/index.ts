@@ -15,6 +15,7 @@ import { createVideoIngestHandler } from "./jobs/video-ingest.js";
 import { isYtDlpAvailable } from "./services/subtitles.js";
 import { closeBrowser } from "./services/browser.js";
 import { createTelegramBot } from "./services/telegram.js";
+import { createAuthRoutes, createAuthMiddleware } from "./auth.js";
 import type { AppContext } from "./trpc.js";
 
 const config = loadConfig();
@@ -43,6 +44,12 @@ const telegramBot = config.PLAINFARE_TELEGRAM_BOT_TOKEN
 const appRouter = createAppRouter(jobQueue);
 const app = new Hono();
 
+// Auth routes (login/logout/status — always public)
+app.route("/", createAuthRoutes(config));
+
+// Auth middleware — protects tRPC and recipe images when credentials are configured
+const requireAuth = createAuthMiddleware(config);
+
 // Health check
 app.get("/api/health", (c) =>
   c.json({
@@ -54,7 +61,7 @@ app.get("/api/health", (c) =>
 );
 
 // tRPC API
-app.all("/api/trpc/*", (c) => {
+app.all("/api/trpc/*", requireAuth, (c) => {
   return fetchRequestHandler({
     endpoint: "/api/trpc",
     req: c.req.raw,
@@ -64,7 +71,7 @@ app.all("/api/trpc/*", (c) => {
 });
 
 // Serve recipe images from the recipes directory
-app.get("/recipes-images/*", async (c) => {
+app.get("/recipes-images/*", requireAuth, async (c) => {
   const filename = c.req.path.replace("/recipes-images/", "");
   if (filename.includes("..") || filename.includes("/")) {
     return c.text("Not found", 404);
@@ -112,6 +119,10 @@ async function main() {
 
   if (telegramBot) {
     await telegramBot.start();
+  }
+
+  if (config.PLAINFARE_USERNAME) {
+    console.log("Authentication enabled");
   }
 
   serve({ fetch: app.fetch, port: config.PLAINFARE_PORT }, () => {
