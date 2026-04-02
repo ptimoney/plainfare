@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { trpc } from "../lib/trpc.js";
 import { Tag } from "../components/Tag.js";
@@ -49,19 +49,69 @@ function MultiplierSelector({ value, onChange }: { value: number; onChange: (n: 
   );
 }
 
-function RecipeHeader({ recipe, targetServings, onServingsChange, multiplier, onMultiplierChange }: {
+function ImageUploadButton({ slug, onUploaded }: { slug: string; onUploaded: () => void }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadMutation = trpc.recipes.uploadImage.useMutation({ onSuccess: onUploaded });
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      const mimeType = dataUrl.slice(5, dataUrl.indexOf(";"));
+      const base64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
+      uploadMutation.mutate({ slug, image: base64, mimeType });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  return (
+    <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileSelect}
+        style={{ display: "none" }}
+      />
+      <button
+        className={styles.imageOverlayBtn}
+        onClick={() => fileInputRef.current?.click()}
+        disabled={uploadMutation.isPending}
+        title="Change image"
+      >
+        {uploadMutation.isPending ? (
+          <span className={styles.imageOverlaySpinner} />
+        ) : (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+        )}
+      </button>
+    </>
+  );
+}
+
+function RecipeHeader({ recipe, slug, targetServings, onServingsChange, multiplier, onMultiplierChange, onImageUploaded }: {
   recipe: Recipe;
+  slug: string;
   targetServings: number | null;
   onServingsChange: (n: number) => void;
   multiplier: number;
   onMultiplierChange: (n: number) => void;
+  onImageUploaded: () => void;
 }) {
   const hasServes = targetServings != null;
   return (
     <>
       <h1 className={styles.title}>{recipe.title}</h1>
       {recipe.description && <p className={styles.description}>{recipe.description}</p>}
-      <RecipeImage className={styles.heroImage} src={recipe.image} alt={recipe.title} />
+      <div className={styles.imageWrapper}>
+        <RecipeImage className={styles.heroImage} src={recipe.image} alt={recipe.title} />
+        <ImageUploadButton slug={slug} onUploaded={onImageUploaded} />
+      </div>
       <div className={styles.metadata}>
         {hasServes ? (
           <ServingsAdjuster serves={targetServings} onChange={onServingsChange} />
@@ -247,7 +297,7 @@ function DeleteButton({ slug }: { slug: string }) {
     return (
       <span className={styles.deleteConfirm}>
         Delete this recipe?{" "}
-        <Button variant="secondary" onClick={() => deleteMutation.mutate({ slug })}>
+        <Button variant="danger-filled" onClick={() => deleteMutation.mutate({ slug })}>
           {deleteMutation.isPending ? "Deleting..." : "Yes, delete"}
         </Button>
         <Button variant="secondary" onClick={() => setConfirming(false)}>No</Button>
@@ -255,7 +305,7 @@ function DeleteButton({ slug }: { slug: string }) {
     );
   }
 
-  return <Button variant="secondary" onClick={() => setConfirming(true)}>Delete</Button>;
+  return <Button variant="danger" onClick={() => setConfirming(true)}>Delete</Button>;
 }
 
 export function RecipeDetail() {
@@ -322,10 +372,15 @@ export function RecipeDetail() {
       </div>
       <RecipeHeader
         recipe={recipe}
+        slug={slug!}
         targetServings={hasNumericServes ? (targetServings ?? originalServings) : null}
         onServingsChange={setTargetServings}
         multiplier={multiplier}
         onMultiplierChange={setMultiplier}
+        onImageUploaded={() => {
+          utils.recipes.get.invalidate({ slug: slug! });
+          utils.recipes.list.invalidate();
+        }}
       />
       <IngredientList groups={recipe.ingredientGroups} unitSystem={unitSystem} onUnitSystemChange={setUnitSystem} />
       <MethodSteps steps={recipe.steps} />

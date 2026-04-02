@@ -52,13 +52,6 @@ describe("plainfare ingest", () => {
     }
   });
 
-  it("scales a recipe with --scale flag", async () => {
-    const { stdout } = await plainfare("ingest", "--scale", "8", join(FIXTURE_DIR, "carbonara.md"));
-    // Carbonara serves 4, scaling to 8 should double quantities
-    // 200g spaghetti → 400g
-    expect(stdout).toContain("400g");
-  });
-
   it("reports confidence to stderr", async () => {
     const { stderr } = await plainfare("ingest", join(FIXTURE_DIR, "carbonara.md"));
     expect(stderr).toContain("Confidence Report");

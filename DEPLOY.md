@@ -3,15 +3,25 @@
 ## Quick start (Docker Compose)
 
 ```bash
-# 1. Clone and configure
-git clone <repo-url> plainfare && cd plainfare
-cp .env.example .env
-# Edit .env with your settings (see Configuration below)
+# 1. Create a project directory
+mkdir plainfare && cd plainfare
 
-# 2. Run
+# 2. Create docker-compose.yml
+cat > docker-compose.yml <<'EOF'
+services:
+  plainfare:
+    image: ghcr.io/ptimoney/plainfare:latest
+    ports:
+      - "3141:3141"
+    volumes:
+      - ./recipes:/data/recipes
+    restart: unless-stopped
+EOF
+
+# 3. Run
 docker compose up -d
 
-# 3. Open http://localhost:3141
+# 4. Open http://localhost:3141
 ```
 
 That's it. Recipes are stored in `./recipes/` as plain markdown files.
@@ -138,9 +148,7 @@ variant:
 # docker-compose.yml
 services:
   plainfare:
-    build:
-      context: .
-      dockerfile: packages/web/Dockerfile.chromium
+    image: ghcr.io/ptimoney/plainfare:latest-chromium
     # ... rest unchanged
 ```
 
@@ -171,8 +179,17 @@ disk exactly where you left them.
 ## Updating
 
 ```bash
-git pull
-docker compose up -d --build
+docker compose pull
+docker compose up -d
+```
+
+### Building from source
+
+If you prefer to build from source rather than using the published images:
+
+```bash
+git clone https://github.com/ptimoney/plainfare.git && cd plainfare
+docker compose -f docker-compose.yml up -d --build
 ```
 
 ---

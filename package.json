@@ -2,6 +2,11 @@
   "name": "plainfare",
   "private": true,
   "description": "Markdown-first recipe management tool",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ptimoney/plainfare.git"
+  },
   "pnpm": {
     "onlyBuiltDependencies": ["sharp"]
   },

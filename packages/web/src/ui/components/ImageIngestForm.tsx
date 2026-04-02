@@ -2,6 +2,7 @@ import { useState } from "react";
 import { trpc } from "../lib/trpc.js";
 import { Button } from "./Button.js";
 import { FileUpload, type FileData } from "./FileUpload.js";
+import { ProgressBar } from "./ProgressBar.js";
 import styles from "./IngestForm.module.css";
 
 interface ImageIngestFormProps {
@@ -25,11 +26,15 @@ export function ImageIngestForm({ onJobCreated }: ImageIngestFormProps) {
     });
   }
 
+  if (mutation.isPending) {
+    return <ProgressBar progress={0} label="Uploading image..." />;
+  }
+
   return (
     <form onSubmit={handleSubmit}>
       <FileUpload value={imageFile} onChange={setImageFile} />
-      <Button type="submit" disabled={!imageFile || mutation.isPending}>
-        {mutation.isPending ? "Submitting..." : "Extract Recipe"}
+      <Button type="submit" disabled={!imageFile}>
+        Extract Recipe
       </Button>
       {mutation.error && (
         <div className={styles.error}>{mutation.error.message}</div>

@@ -1,8 +1,14 @@
 import { z } from "zod";
+import { writeFile } from "node:fs/promises";
+import { resolve, dirname } from "node:path";
+import sharp from "sharp";
 import { router, publicProcedure } from "../trpc.js";
 import { parseNutritionResponse, serialiseRecipe } from "@plainfare/core";
 import type { Recipe, Ingredient } from "@plainfare/core";
 import { findDuplicates } from "../services/deduplication.js";
+
+const IMAGE_MAX_WIDTH = 1200;
+const IMAGE_QUALITY = 80;
 
 export const recipesRouter = router({
   capabilities: publicProcedure
@@ -90,6 +96,31 @@ export const recipesRouter = router({
 
       // Update recipe with per-serving nutrition data
       const updatedRecipe: Recipe = { ...entry.recipe, nutrition };
+      const markdown = serialiseRecipe(updatedRecipe);
+      return ctx.library.update(input.slug, markdown);
+    }),
+
+  uploadImage: publicProcedure
+    .input(z.object({
+      slug: z.string(),
+      image: z.string().max(10_000_000, "Image must be under 10MB"),
+      mimeType: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const entry = ctx.library.get(input.slug);
+      if (!entry) throw new Error(`Recipe not found: ${input.slug}`);
+
+      const imageBuffer = Buffer.from(input.image, "base64");
+      const compressed = await sharp(imageBuffer)
+        .resize(IMAGE_MAX_WIDTH, undefined, { withoutEnlargement: true })
+        .jpeg({ quality: IMAGE_QUALITY })
+        .toBuffer();
+
+      const imageFilename = `${input.slug}.jpg`;
+      const imagePath = resolve(dirname(entry.filePath), imageFilename);
+      await writeFile(imagePath, compressed);
+
+      const updatedRecipe: Recipe = { ...entry.recipe, image: imageFilename };
       const markdown = serialiseRecipe(updatedRecipe);
       return ctx.library.update(input.slug, markdown);
     }),

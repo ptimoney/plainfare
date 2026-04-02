@@ -22,6 +22,26 @@ function DuplicatesNavLink() {
   );
 }
 
+function ActiveJobsIndicator() {
+  const { data } = trpc.jobs.list.useQuery(
+    { status: "running" },
+    { refetchInterval: 2000 },
+  );
+  const { data: pending } = trpc.jobs.list.useQuery(
+    { status: "pending" },
+    { refetchInterval: 2000 },
+  );
+
+  const count = (data?.length ?? 0) + (pending?.length ?? 0);
+  if (count === 0) return null;
+
+  return (
+    <span className={styles.jobsBadge} title={`${count} active job${count > 1 ? "s" : ""}`}>
+      {count}
+    </span>
+  );
+}
+
 function App() {
   const [queryClient] = useState(() => new QueryClient());
   const [trpcClient] = useState(() =>
@@ -41,7 +61,7 @@ function App() {
             <nav className={styles.nav}>
               <Link to="/shopping" className={styles.navLink}>Shopping List</Link>
               <DuplicatesNavLink />
-              <Link to="/ingest" className={styles.addButton}>+ Add Recipe</Link>
+              <Link to="/ingest" className={styles.addButton}>+ Add Recipe <ActiveJobsIndicator /></Link>
             </nav>
           </header>
           <Routes>

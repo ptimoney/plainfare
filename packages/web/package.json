@@ -2,6 +2,12 @@
   "name": "@plainfare/web",
   "version": "0.1.0",
   "description": "Web service — Hono server + React UI",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ptimoney/plainfare.git",
+    "directory": "packages/web"
+  },
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.server.json && vite build",

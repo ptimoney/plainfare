@@ -44,3 +44,19 @@
   background: var(--color-primary-hover);
   text-decoration: none;
 }
+
+.jobsBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2em;
+  height: 1.2em;
+  padding: 0 0.3em;
+  margin-left: 0.3em;
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1;
+  background: white;
+  color: var(--color-primary);
+  border-radius: 999px;
+}

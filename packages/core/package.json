@@ -2,6 +2,12 @@
   "name": "@plainfare/core",
   "version": "0.1.0",
   "description": "Core library — types, parser, writer, ingredient parser",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ptimoney/plainfare.git",
+    "directory": "packages/core"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

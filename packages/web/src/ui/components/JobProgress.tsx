@@ -18,7 +18,15 @@ interface IngestOutput {
 export function JobProgress({ jobId, onReset }: JobProgressProps) {
   const { job, isPolling, isComplete, isFailed } = useJobPolling(jobId);
 
-  if (!jobId || !job) return null;
+  if (!jobId) return null;
+
+  if (!job) {
+    return (
+      <div className={styles.wrapper}>
+        <ProgressBar progress={0} label="Starting..." />
+      </div>
+    );
+  }
 
   if (isPolling) {
     const label = job.status === "pending" ? `Queued... ${job.progress}%` : `Extracting recipe... ${job.progress}%`;

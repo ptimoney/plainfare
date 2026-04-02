@@ -1,8 +1,10 @@
 services:
   plainfare:
-    build:
-      context: .
-      dockerfile: packages/web/Dockerfile
+    image: ghcr.io/ptimoney/plainfare:latest
+    # To build from source instead, comment out `image` and uncomment:
+    # build:
+    #   context: .
+    #   dockerfile: packages/web/Dockerfile
     ports:
       - "${PLAINFARE_PORT:-3141}:3141"
     volumes:
