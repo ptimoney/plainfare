@@ -8,7 +8,9 @@
     "url": "https://github.com/ptimoney/plainfare.git"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["sharp"]
+    "onlyBuiltDependencies": [
+      "sharp"
+    ]
   },
   "scripts": {
     "build": "pnpm --filter @plainfare/core run build && pnpm --filter @plainfare/cli run build",
@@ -21,5 +23,6 @@
     "version:patch": "pnpm -r exec -- npm version patch --no-git-tag-version && npm version patch --no-git-tag-version && git add -A && git commit -m \"v$(node -p 'require(\"./package.json\").version')\" && git tag v$(node -p 'require(\"./package.json\").version') && git push && git push --tags",
     "version:minor": "pnpm -r exec -- npm version minor --no-git-tag-version && npm version minor --no-git-tag-version && git add -A && git commit -m \"v$(node -p 'require(\"./package.json\").version')\" && git tag v$(node -p 'require(\"./package.json\").version') && git push && git push --tags",
     "version:major": "pnpm -r exec -- npm version major --no-git-tag-version && npm version major --no-git-tag-version && git add -A && git commit -m \"v$(node -p 'require(\"./package.json\").version')\" && git tag v$(node -p 'require(\"./package.json\").version') && git push && git push --tags"
-  }
+  },
+  "version": "0.0.1"
 }
