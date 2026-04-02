@@ -1,9 +1,13 @@
 import { writeFile } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
+import sharp from "sharp";
 import { parseAiRecipeResponse } from "@plainfare/core";
 import type { AiProvider, Recipe } from "@plainfare/core";
 import type { JobHandler } from "./queue.js";
 import type { RecipeLibrary } from "../services/library.js";
+
+const IMAGE_MAX_WIDTH = 1200;
+const IMAGE_QUALITY = 80;
 
 export interface AiImageIngestInput {
   image: string; // base64-encoded image data
@@ -52,10 +56,13 @@ export function createAiIngestHandler(
 
       // Save the uploaded image alongside the recipe file if AI didn't extract an image
       if (!entry.recipe.image) {
-        const ext = mimeToExt(input.mimeType);
-        const imageFilename = `${entry.slug}.${ext}`;
+        const compressed = await sharp(imageBuffer)
+          .resize(IMAGE_MAX_WIDTH, undefined, { withoutEnlargement: true })
+          .jpeg({ quality: IMAGE_QUALITY })
+          .toBuffer();
+        const imageFilename = `${entry.slug}.jpg`;
         const imagePath = resolve(dirname(entry.filePath), imageFilename);
-        await writeFile(imagePath, imageBuffer);
+        await writeFile(imagePath, compressed);
         const { serialiseRecipe } = await import("@plainfare/core");
         await library.update(entry.slug,
           serialiseRecipe({ ...entry.recipe, image: imageFilename }),

@@ -2,6 +2,9 @@
   "name": "plainfare",
   "private": true,
   "description": "Markdown-first recipe management tool",
+  "pnpm": {
+    "onlyBuiltDependencies": ["sharp"]
+  },
   "scripts": {
     "build": "pnpm --filter @plainfare/core run build && pnpm --filter @plainfare/cli run build",
     "test": "pnpm -r run test",
