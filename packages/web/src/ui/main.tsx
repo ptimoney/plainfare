@@ -10,6 +10,7 @@ import { RecipeDetail } from "./pages/RecipeDetail.js";
 import { Ingest } from "./pages/Ingest.js";
 import { ShoppingList } from "./pages/ShoppingList.js";
 import { Duplicates } from "./pages/Duplicates.js";
+import { Jobs } from "./pages/Jobs.js";
 import { Login } from "./pages/Login.js";
 import styles from "./main.module.css";
 
@@ -37,9 +38,9 @@ function ActiveJobsIndicator() {
   if (count === 0) return null;
 
   return (
-    <span className={styles.jobsBadge} title={`${count} active job${count > 1 ? "s" : ""}`}>
-      {count}
-    </span>
+    <Link to="/jobs" className={styles.jobsBadgeLink} title={`${count} active job${count > 1 ? "s" : ""}`}>
+      {count} active
+    </Link>
   );
 }
 
@@ -102,7 +103,8 @@ function App() {
             <nav className={styles.nav}>
               <Link to="/shopping" className={styles.navLink}>Shopping List</Link>
               <DuplicatesNavLink />
-              <Link to="/ingest" className={styles.addButton}>+ Add Recipe <ActiveJobsIndicator /></Link>
+              <ActiveJobsIndicator />
+              <Link to="/ingest" className={styles.addButton}>+ Add Recipe</Link>
               {authState.required && (
                 <button className={styles.navLink} onClick={handleLogout} style={{ background: "none", border: "none", cursor: "pointer", font: "inherit" }}>
                   Logout
@@ -113,6 +115,7 @@ function App() {
           <Routes>
             <Route path="/" element={<RecipeList />} />
             <Route path="/ingest" element={<Ingest />} />
+            <Route path="/jobs" element={<Jobs />} />
             <Route path="/shopping" element={<ShoppingList />} />
             <Route path="/duplicates" element={<Duplicates />} />
             <Route path="/recipes/:slug" element={<RecipeDetail />} />

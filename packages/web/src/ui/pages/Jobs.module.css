@@ -1,0 +1,90 @@
+.backLink {
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+}
+
+.title {
+  font-size: var(--font-size-4xl);
+  font-weight: 700;
+  margin: var(--space-lg) 0;
+}
+
+.empty {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  margin-top: var(--space-xl);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  margin-top: var(--space-xl);
+}
+
+.job {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+}
+
+.jobHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+}
+
+.jobType {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.jobTime {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-faint);
+}
+
+.jobStatus {
+  display: inline-block;
+  font-size: var(--font-size-xs);
+  padding: 0.15em 0.5em;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.statusPending {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.statusRunning {
+  background: var(--color-primary-bg);
+  color: var(--color-primary);
+}
+
+.statusCompleted {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.statusFailed {
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+}
+
+.jobResult {
+  margin-top: var(--space-sm);
+  font-size: var(--font-size-sm);
+}
+
+.jobResult a {
+  color: var(--color-primary);
+}
+
+.jobError {
+  margin-top: var(--space-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-error-text);
+}
