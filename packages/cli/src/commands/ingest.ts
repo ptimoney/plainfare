@@ -47,7 +47,7 @@ export const ingestCommand = new Command("ingest")
           if (opts.json) {
             console.log(JSON.stringify(r, null, 2));
           } else {
-            console.log(serialiseRecipe(r.recipe));
+            console.log(serialiseRecipe(r.recipe, { placeholders: true }));
             console.log("---\n");
           }
         }
@@ -67,7 +67,7 @@ export const ingestCommand = new Command("ingest")
     if (opts.json) {
       console.log(JSON.stringify(result, null, 2));
     } else {
-      const canonical = serialiseRecipe(recipe);
+      const canonical = serialiseRecipe(recipe, { placeholders: true });
       if (opts.output) {
         const outPath = resolve(opts.output);
         await writeFile(outPath, canonical, "utf-8");

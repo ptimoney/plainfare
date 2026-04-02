@@ -1,6 +1,12 @@
 import type { Recipe, Ingredient } from "../types.js";
 
-export function serialiseRecipe(recipe: Recipe): string {
+export interface SerialiseOptions {
+  /** When true, emit empty placeholders for missing metadata fields so users can fill them in. */
+  placeholders?: boolean;
+}
+
+export function serialiseRecipe(recipe: Recipe, options?: SerialiseOptions): string {
+  const placeholders = options?.placeholders ?? false;
   const lines: string[] = [];
 
   // Title
@@ -21,19 +27,27 @@ export function serialiseRecipe(recipe: Recipe): string {
 
   if (recipe.source) {
     metaLines.push(`Source: ${recipe.source}`);
+  } else if (placeholders) {
+    metaLines.push("Source:");
   }
   if (recipe.tags && recipe.tags.length > 0) {
     const uniqueTags = deduplicateTags(recipe.tags);
     metaLines.push(`Tags: ${uniqueTags.join(", ")}`);
+  } else if (placeholders) {
+    metaLines.push("Tags:");
   }
   if (recipe.serves) {
     metaLines.push(`Serves: ${recipe.serves}`);
+  } else if (placeholders) {
+    metaLines.push("Serves:");
   }
   if (recipe.time) {
     const parts: string[] = [];
     if (recipe.time.prep != null) parts.push(`${recipe.time.prep} mins prep`);
     if (recipe.time.cook != null) parts.push(`${recipe.time.cook} mins cook`);
     if (parts.length > 0) metaLines.push(`Time: ${parts.join(" | ")}`);
+  } else if (placeholders) {
+    metaLines.push("Time:");
   }
   if (recipe.nutrition) {
     const n = recipe.nutrition;
@@ -63,6 +77,8 @@ export function serialiseRecipe(recipe: Recipe): string {
         lines.push(`- ${formatIngredient(ing)}`);
       }
     }
+  } else if (placeholders) {
+    lines.push("", "## Ingredients", "");
   }
 
   // Method
@@ -83,11 +99,15 @@ export function serialiseRecipe(recipe: Recipe): string {
     if (lines[lines.length - 1] === "") {
       lines.pop();
     }
+  } else if (placeholders) {
+    lines.push("", "## Method", "");
   }
 
   // Notes
   if (recipe.notes) {
     lines.push("", "## Notes", "", recipe.notes);
+  } else if (placeholders) {
+    lines.push("", "## Notes", "");
   }
 
   return lines.join("\n") + "\n";

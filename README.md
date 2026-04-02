@@ -22,8 +22,10 @@ existing systems if you like
   proprietary formats
 - **Multiple ingestion sources** — URLs (with JSON-LD extraction), images, text,
   video (YouTube/TikTok/Instagram), Paprika and CopyMeThat imports
-- **AI-powered extraction** — point any OpenAI-compatible API (OpenAI, Ollama,
-  etc.) at a photo or video and get a structured recipe
+- **Multiple ingestion routes** - Submit via the web portal, or via a telegram
+  bot. TODO: email based or app based submission
+- **Optional AI-powered extraction** — point any OpenAI-compatible API (OpenAI,
+  Ollama, etc.) at a photo or video and get a structured recipe
 - **Recipe scaling** — adjust servings with automatic ingredient recalculation
 - **Unit conversion** — toggle between original, metric, and imperial
 - **Shopping lists** — select recipes, get a merged ingredient list with
@@ -31,8 +33,6 @@ existing systems if you like
 - **Nutrition estimation** — AI-powered per-serving nutrition from ingredients
 - **Duplicate detection** — finds near-duplicate recipes by title and ingredient
   similarity
-- **Telegram bot** — send a URL, photo, or text to your bot and it saves the
-  recipe
 - **File watching** — edit recipes externally, the app picks up changes
   instantly
 - **Self-hosted** — Docker image with optional Chromium for JS-rendered recipe

@@ -73,7 +73,7 @@ export class RecipeLibrary {
   async add(recipe: Recipe): Promise<RecipeEntry> {
     const slug = this.uniqueSlug(this.slugify(recipe.title));
     const filePath = resolve(this.recipesDir, `${slug}.md`);
-    const markdown = serialiseRecipe(recipe);
+    const markdown = serialiseRecipe(recipe, { placeholders: true });
 
     // Track this write so the watcher doesn't redundantly re-parse
     this.ownWrites.add(filePath);
