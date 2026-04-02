@@ -25,7 +25,7 @@ RUN pnpm --filter @plainfare/web run build
 FROM node:22-slim
 
 RUN npm install -g pnpm@10 && \
-    apt-get update && apt-get install -y --no-install-recommends curl python3 && \
+    apt-get update && apt-get install -y --no-install-recommends curl ca-certificates python3 && \
     curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
     chmod a+rx /usr/local/bin/yt-dlp && \
     rm -rf /var/lib/apt/lists/*
