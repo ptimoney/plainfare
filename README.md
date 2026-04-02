@@ -1,20 +1,31 @@
 # plainfare
 
-A markdown-first recipe management tool. Your `.md` files **are** the database — not an export format, not a sync target. Edit recipes in Obsidian, sync with iCloud, version control with git. If plainfare disappeared tomorrow, your recipe files remain fully intact and usable.
+A markdown-first recipe management tool. Your `.md` files **are** the database —
+not an export format, not a sync target. Edit recipes in Obsidian, sync with
+iCloud, version control with git. If plainfare disappeared tomorrow, your recipe
+files remain fully intact and usable.
 
 ## Features
 
-- **Markdown is the database** — every recipe is a readable `.md` file, no proprietary formats
-- **Multiple ingestion sources** — URLs (with JSON-LD extraction), images, text, video (YouTube/TikTok/Instagram), Paprika and CopyMeThat imports
-- **AI-powered extraction** — point any OpenAI-compatible API (OpenAI, Ollama, etc.) at a photo or video and get a structured recipe
+- **Markdown is the database** — every recipe is a readable `.md` file, no
+  proprietary formats
+- **Multiple ingestion sources** — URLs (with JSON-LD extraction), images, text,
+  video (YouTube/TikTok/Instagram), Paprika and CopyMeThat imports
+- **AI-powered extraction** — point any OpenAI-compatible API (OpenAI, Ollama,
+  etc.) at a photo or video and get a structured recipe
 - **Recipe scaling** — adjust servings with automatic ingredient recalculation
 - **Unit conversion** — toggle between original, metric, and imperial
-- **Shopping lists** — select recipes, get a merged ingredient list with quantities summed
+- **Shopping lists** — select recipes, get a merged ingredient list with
+  quantities summed
 - **Nutrition estimation** — AI-powered per-serving nutrition from ingredients
-- **Duplicate detection** — finds near-duplicate recipes by title and ingredient similarity
-- **Telegram bot** — send a URL, photo, or text to your bot and it saves the recipe
-- **File watching** — edit recipes externally, the app picks up changes instantly
-- **Self-hosted** — Docker image with optional Chromium for JS-rendered recipe sites
+- **Duplicate detection** — finds near-duplicate recipes by title and ingredient
+  similarity
+- **Telegram bot** — send a URL, photo, or text to your bot and it saves the
+  recipe
+- **File watching** — edit recipes externally, the app picks up changes
+  instantly
+- **Self-hosted** — Docker image with optional Chromium for JS-rendered recipe
+  sites
 
 ## Recipe Format
 
@@ -23,11 +34,9 @@ A markdown-first recipe management tool. Your `.md` files **are** the database �
 
 A classic Roman pasta dish.
 
-Source: https://example.com/carbonara
-Tags: pasta, italian, weeknight
-Serves: 4
-Time: 10 mins prep | 20 mins cook
-Calories: 520 | Protein: 22g | Carbs: 61g | Fat: 18g | Fibre: 2g
+Source: https://example.com/carbonara Tags: pasta, italian, weeknight Serves: 4
+Time: 10 mins prep | 20 mins cook Calories: 520 | Protein: 22g | Carbs: 61g |
+Fat: 18g | Fibre: 2g
 
 ## Ingredients
 
@@ -76,36 +85,72 @@ services:
     volumes:
       - ./recipes:/data/recipes
     environment:
-      # Optional: enable AI features
+      # PLAINFARE_PORT: 3141
+      # PLAINFARE_BASE_URL: https://plainfare.example.com
+      # PLAINFARE_JOB_CONCURRENCY: 2
+      #
+      # AI provider (enables image/text/video extraction + nutrition estimation)
       # PLAINFARE_AI_ENDPOINT: https://api.openai.com
       # PLAINFARE_AI_API_KEY: sk-...
       # PLAINFARE_AI_MODEL: gpt-4o
+      #
+      # Telegram bot (send recipes from your phone)
+      # PLAINFARE_TELEGRAM_BOT_TOKEN: "123456:ABC-DEF..."
     restart: unless-stopped
 ```
 
-For Chromium-based URL fetching (JS-rendered recipe sites):
-
-```bash
-docker run -d \
-  -p 3141:3141 \
-  -v ./recipes:/data/recipes \
-  ghcr.io/ptimoney/plainfare:latest-chromium
-```
-
-See [DEPLOY.md](DEPLOY.md) for full configuration, reverse proxy examples, and non-Docker setup.
+For Chromium-based URL fetching (JS-rendered recipe sites), use this image
+instead: `ghcr.io/ptimoney/plainfare:latest-chromium`
 
 ## Configuration
 
-| Variable | Default | Description |
-|---|---|---|
-| `PLAINFARE_RECIPES_DIR` | `./recipes` | Path to recipe `.md` files |
-| `PLAINFARE_PORT` | `3141` | Server port |
-| `PLAINFARE_AI_ENDPOINT` | — | OpenAI-compatible API base URL |
-| `PLAINFARE_AI_API_KEY` | — | API key for AI provider |
-| `PLAINFARE_AI_MODEL` | `gpt-4o` | Model name |
-| `PLAINFARE_TELEGRAM_BOT_TOKEN` | — | Telegram bot token |
-| `PLAINFARE_BASE_URL` | — | Public URL (for Telegram reply links) |
-| `PLAINFARE_JOB_CONCURRENCY` | `2` | Max concurrent background jobs |
+| Variable                       | Default     | Description                           |
+| ------------------------------ | ----------- | ------------------------------------- |
+| `PLAINFARE_RECIPES_DIR`        | `./recipes` | Path to recipe `.md` files            |
+| `PLAINFARE_PORT`               | `3141`      | Server port                           |
+| `PLAINFARE_BASE_URL`           | —           | Public URL (for Telegram reply links) |
+| `PLAINFARE_AI_ENDPOINT`        | —           | OpenAI-compatible API base URL        |
+| `PLAINFARE_AI_API_KEY`         | —           | API key for AI provider               |
+| `PLAINFARE_AI_MODEL`           | `gpt-4o`    | Model name                            |
+| `PLAINFARE_TELEGRAM_BOT_TOKEN` | —           | Telegram bot token                    |
+| `PLAINFARE_JOB_CONCURRENCY`    | `2`         | Max concurrent background jobs        |
+
+URL ingestion works without AI — paste a recipe URL and it'll be extracted
+deterministically via JSON-LD or HTML parsing. AI unlocks image, text, and video
+extraction plus nutrition estimation.
+
+### Telegram Bot Setup
+
+1. Message [@BotFather](https://t.me/BotFather) on Telegram
+2. Send `/newbot`, pick a name and username
+3. Set `PLAINFARE_TELEGRAM_BOT_TOKEN` to the token you receive
+
+Then share URLs, text, photos, or video links with your bot from any device.
+
+## Your Data
+
+Recipes are plain `.md` files in the mounted volume. You can:
+
+- Edit them with any text editor, Obsidian, VS Code, etc.
+- Sync via git, iCloud, Syncthing, or any file sync tool
+- Back up by copying the directory
+
+There is no database. If you delete the container, your recipes are still on
+disk exactly where you left them.
+
+## Updating
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+## Health Check
+
+```bash
+curl http://localhost:3141/api/health
+# {"status":"ok","recipes":12,"ai":true,"ytdlp":true}
+```
 
 ## CLI
 
@@ -137,12 +182,17 @@ pnpm test
 
 # Type check
 pnpm typecheck
+
+# Build from source
+docker compose up -d --build
 ```
 
 ### Project Structure
 
-- `packages/core` — Pure TypeScript library: types, parsing, serialisation, scaling
-- `packages/web` — Hono server + React SPA + job queue + AI/browser/Telegram services
+- `packages/core` — Pure TypeScript library: types, parsing, serialisation,
+  scaling
+- `packages/web` — Hono server + React SPA + job queue + AI/browser/Telegram
+  services
 - `packages/cli` — Thin CLI wrapper over core
 
 ## License
