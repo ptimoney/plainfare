@@ -17,6 +17,9 @@
     "dev": "kill $(lsof -ti:3141) 2>/dev/null; PLAINFARE_RECIPES_DIR=$PWD/recipes pnpm --filter @plainfare/web run dev & pnpm --filter @plainfare/web run dev:ui & wait",
     "dev:server": "PLAINFARE_RECIPES_DIR=$PWD/recipes pnpm --filter @plainfare/web run dev",
     "typecheck": "pnpm -r exec tsc --noEmit",
-    "clean": "pnpm -r exec rm -rf dist *.tsbuildinfo"
+    "clean": "pnpm -r exec rm -rf dist *.tsbuildinfo",
+    "version:patch": "pnpm -r exec -- npm version patch --no-git-tag-version && npm version patch -m 'v%s' && git push && git push --tags",
+    "version:minor": "pnpm -r exec -- npm version minor --no-git-tag-version && npm version minor -m 'v%s' && git push && git push --tags",
+    "version:major": "pnpm -r exec -- npm version major --no-git-tag-version && npm version major -m 'v%s' && git push && git push --tags"
   }
 }
