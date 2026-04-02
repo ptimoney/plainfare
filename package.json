@@ -24,5 +24,5 @@
     "version:minor": "pnpm -r exec -- npm version minor --no-git-tag-version && npm version minor --no-git-tag-version && git add -A && git commit -m \"v$(node -p 'require(\"./package.json\").version')\" && git tag v$(node -p 'require(\"./package.json\").version') && git push && git push --tags",
     "version:major": "pnpm -r exec -- npm version major --no-git-tag-version && npm version major --no-git-tag-version && git add -A && git commit -m \"v$(node -p 'require(\"./package.json\").version')\" && git tag v$(node -p 'require(\"./package.json\").version') && git push && git push --tags"
   },
-  "version": "0.1.0"
+  "version": "0.1.1"
 }
