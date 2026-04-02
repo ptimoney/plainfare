@@ -5,4 +5,5 @@ dist/
 test/fixtures/actual/
 COMPETITIVE_LANDSCAPE.md
 NEXT_STEPS.md
+CLAUDE.md
 .env
