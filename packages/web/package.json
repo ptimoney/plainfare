@@ -13,7 +13,7 @@
     "build": "tsc -p tsconfig.server.json && vite build",
     "build:server": "tsc -p tsconfig.server.json",
     "build:ui": "vite build",
-    "dev": "tsx watch src/server/index.ts",
+    "dev": "tsx watch --env-file=../../.env src/server/index.ts",
     "dev:ui": "vite dev",
     "start": "node dist/server/index.js",
     "test": "vitest run",
