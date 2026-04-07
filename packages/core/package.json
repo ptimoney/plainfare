@@ -1,6 +1,6 @@
 {
   "name": "@plainfare/core",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Core library — types, parser, writer, ingredient parser",
   "license": "MIT",
   "repository": {
