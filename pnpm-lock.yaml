@@ -35,6 +35,9 @@ importers:
       fflate:
         specifier: ^0.8.2
         version: 0.8.2
+      jsonrepair:
+        specifier: ^3.13.3
+        version: 3.13.3
       linkedom:
         specifier: ^0.18.12
         version: 0.18.12
@@ -1155,6 +1158,10 @@ packages:
     peerDependenciesMeta:
       canvas:
         optional: true
+
+  jsonrepair@3.13.3:
+    resolution: {integrity: sha512-BTznj0owIt2CBAH/LTo7+1I5pMvl1e1033LRl/HUowlZmJOIhzC0zbX5bxMngLkfT4WnzPP26QnW5wMr2g9tsQ==}
+    hasBin: true
 
   lightningcss-android-arm64@1.32.0:
     resolution: {integrity: sha512-YK7/ClTt4kAK0vo6w3X+Pnm0D2cf2vPHbhOXdoNti1Ga0al1P4TBZhwjATvjNwLEBCnKvjJc2jQgHXH0NEwlAg==}
@@ -2526,6 +2533,8 @@ snapshots:
       xml-name-validator: 5.0.0
     transitivePeerDependencies:
       - '@noble/hashes'
+
+  jsonrepair@3.13.3: {}
 
   lightningcss-android-arm64@1.32.0:
     optional: true

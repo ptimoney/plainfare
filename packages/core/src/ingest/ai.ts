@@ -1,3 +1,4 @@
+import { jsonrepair } from "jsonrepair";
 import type { ParseResult, Recipe, Nutrition, ConfidenceLevel } from "../types.js";
 import { buildConfidenceReport } from "./confidence.js";
 
@@ -112,7 +113,15 @@ export function parseAiRecipeResponse(response: string): ParseResult {
     cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, "").replace(/\n?```\s*$/, "");
   }
 
-  const raw = JSON.parse(cleaned);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let raw: any;
+  try {
+    raw = JSON.parse(cleaned);
+  } catch {
+    // Smaller models often produce near-valid JSON (trailing commas, unescaped
+    // characters, truncated output, etc.) — attempt repair before giving up
+    raw = JSON.parse(jsonrepair(cleaned));
+  }
 
   const recipe: Recipe = {
     title: raw.title || "Untitled Recipe",

@@ -56,8 +56,10 @@ export class OpenAiCompatibleProvider implements AiProvider {
     systemPrompt: string,
     userContent: unknown,
     maxTokens: number,
+    label: string,
   ): Promise<string> {
-    const response = await fetch(`${cfg.endpoint}/v1/chat/completions`, {
+    const url = `${cfg.endpoint}/v1/chat/completions`;
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -75,7 +77,7 @@ export class OpenAiCompatibleProvider implements AiProvider {
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(`AI provider error ${response.status}: ${body}`);
+      throw new Error(`AI provider error during ${label} (${cfg.model} @ ${url}): ${response.status}: ${body}`);
     }
 
     const data = (await response.json()) as {
@@ -98,17 +100,18 @@ export class OpenAiCompatibleProvider implements AiProvider {
         { type: "text", text: "Transcribe this recipe." },
       ],
       2048,
+      "vision transcription",
     );
 
     // Step 2: text model converts the transcription to structured recipe JSON
-    return this.callApi(this.text, buildTextExtractionPrompt(), transcription, 4096);
+    return this.callApi(this.text, buildTextExtractionPrompt(), transcription, 4096, "recipe extraction");
   }
 
   async extractRecipeFromText(text: string): Promise<string> {
-    return this.callApi(this.text, buildTextExtractionPrompt(), text, 4096);
+    return this.callApi(this.text, buildTextExtractionPrompt(), text, 4096, "recipe extraction");
   }
 
   async estimateNutrition(ingredientText: string): Promise<string> {
-    return this.callApi(this.text, buildNutritionEstimationPrompt(), ingredientText, 1024);
+    return this.callApi(this.text, buildNutritionEstimationPrompt(), ingredientText, 1024, "nutrition estimation");
   }
 }

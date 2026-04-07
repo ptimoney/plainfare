@@ -147,8 +147,11 @@ describe("parseAiRecipeResponse", () => {
     expect(result.recipe.title).toBe("Soup");
   });
 
-  it("throws on invalid JSON", () => {
-    expect(() => parseAiRecipeResponse("not json at all")).toThrow();
+  it("degrades gracefully on completely unparseable input", () => {
+    // jsonrepair makes a best effort — even garbage input produces a result
+    // rather than crashing. The recipe falls back to default values.
+    const result = parseAiRecipeResponse("not json at all");
+    expect(result.recipe.title).toBe("Untitled Recipe");
   });
 
   it("handles missing title gracefully", () => {
