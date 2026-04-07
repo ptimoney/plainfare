@@ -9,6 +9,11 @@ const configSchema = z.object({
   PLAINFARE_AI_API_KEY: z.string().optional(),
   PLAINFARE_AI_MODEL: z.string().default("gpt-4o"),
 
+  // Vision model override (optional — falls back to AI provider above for image tasks)
+  PLAINFARE_AI_VISION_ENDPOINT: z.string().url().optional(),
+  PLAINFARE_AI_VISION_API_KEY: z.string().optional(),
+  PLAINFARE_AI_VISION_MODEL: z.string().optional(),
+
   // Job queue
   PLAINFARE_JOB_CONCURRENCY: z.coerce.number().default(2),
 

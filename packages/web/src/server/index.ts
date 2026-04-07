@@ -33,7 +33,10 @@ if (config.PLAINFARE_AI_ENDPOINT) {
   aiProvider = new OpenAiCompatibleProvider(config);
   jobQueue.registerHandler(createAiIngestHandler(aiProvider, library));
   jobQueue.registerHandler(createAiTextIngestHandler(aiProvider, library));
-  console.log(`AI ingestion enabled (model: ${config.PLAINFARE_AI_MODEL})`);
+  const visionTag = config.PLAINFARE_AI_VISION_ENDPOINT
+    ? ` | vision: ${config.PLAINFARE_AI_VISION_MODEL ?? config.PLAINFARE_AI_MODEL}`
+    : "";
+  console.log(`AI ingestion enabled (model: ${config.PLAINFARE_AI_MODEL}${visionTag})`);
 }
 
 // Telegram bot (optional — only starts if token is configured)

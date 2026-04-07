@@ -68,18 +68,21 @@ function extractionRules(): string {
 }
 
 /**
- * Build the system prompt for image-based recipe extraction.
- * This lives in core so the prompt stays in sync with the Recipe type.
+ * Build the system prompt for image transcription (step 1 of two-step image pipeline).
+ * Asks the vision model to describe the recipe in natural language — not JSON.
+ * The text model then handles structured extraction in step 2.
  */
-export function buildImageExtractionPrompt(): string {
-  return `You are a recipe extraction assistant. Extract the recipe from the provided image and return it as a JSON object.
+export function buildImageTranscriptionPrompt(): string {
+  return `You are a recipe transcription assistant. Examine the provided image carefully and transcribe every recipe detail you can see into plain text.
 
-Return ONLY valid JSON with no markdown formatting, no code fences, no explanation. The JSON must conform to this schema:
+Include:
+- Recipe title if visible
+- All ingredients with their exact quantities and units
+- All method/cooking steps in order
+- Any cooking times, temperatures, or serving size information
+- Any notes or tips visible
 
-${recipeJsonSchema()}
-
-${extractionRules()}
-- Extract all visible information from the image`;
+Write in clear, complete sentences. Preserve all specific quantities, measurements, and details exactly as shown. Do not summarise or paraphrase — transcribe faithfully.`;
 }
 
 /**

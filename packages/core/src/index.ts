@@ -23,7 +23,7 @@ export { parseCooklang } from "./ingest/cooklang.js";
 export { parsePaprikaArchive } from "./ingest/paprika.js";
 export { parseCopyMeThatArchive } from "./ingest/copymethat.js";
 export type { AiProvider } from "./ingest/ai.js";
-export { buildImageExtractionPrompt, buildTextExtractionPrompt, parseAiRecipeResponse, buildNutritionEstimationPrompt, parseNutritionResponse } from "./ingest/ai.js";
+export { buildImageTranscriptionPrompt, buildTextExtractionPrompt, parseAiRecipeResponse, buildNutritionEstimationPrompt, parseNutritionResponse } from "./ingest/ai.js";
 
 // Functions — operations on a Recipe AST
 export { serialiseRecipe } from "./functions/serialise.js";
